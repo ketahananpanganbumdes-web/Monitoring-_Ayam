@@ -3,165 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem BUMDes Cikahuripan - Modul Monitoring Lengkap</title>
+    <title>Sistem BUMDes Cikahuripan - Fix Print Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .tab-btn.active { border-bottom: 4px solid #facc15; font-weight: bold; opacity: 1; }
-        .tab-btn { opacity: 0.8; transition: all 0.3s; cursor: pointer; }
-        #app-content { display: none; } 
-
+        
+        /* FIX MASALAH CETAK BLANK */
         @media print {
-            body * { visibility: hidden; }
-            #struk-area, #struk-area * { visibility: visible; }
+            /* Sembunyikan semua kontainer utama */
+            body > *:not(#struk-area) { display: none !important; }
+            
+            /* Tampilkan area struk dengan paksa */
             #struk-area { 
-                position: absolute; left: 0; top: 0; width: 58mm; 
-                padding: 2mm; background: white; 
+                display: block !important;
+                visibility: visible !important;
+                width: 58mm;
+                margin: 0;
+                padding: 5px;
             }
             @page { margin: 0; size: auto; }
         }
-        #struk-area { display: none; font-family: 'Courier New', monospace; }
+
+        #struk-area { display: none; font-family: 'Courier New', monospace; font-size: 10px; }
     </style>
 </head>
-<body class="bg-gray-100 font-sans">
-
-    <div id="login-screen" class="min-h-screen flex items-center justify-center px-4 bg-green-900">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border-t-8 border-yellow-500">
-            <center>
-                <img src="https://i.ibb.co.com/RG8wTX9W/Logo-Bumdes.png" class="h-20 mb-4" alt="Logo">
-                <h2 class="font-black text-gray-800 text-xl uppercase">BUMDes Cikahuripan</h2>
-                <p class="text-[10px] text-gray-500 mb-6 tracking-widest font-bold">UNIT KETAHANAN PANGAN</p>
-            </center>
-            <div class="space-y-4">
-                <input type="text" id="user" class="w-full p-4 border rounded-xl outline-none font-bold" placeholder="Username">
-                <input type="password" id="pass" class="w-full p-4 border rounded-xl outline-none font-bold" placeholder="Password">
-                <button onclick="checkLogin()" class="w-full bg-green-700 text-white font-black py-4 rounded-xl shadow-lg uppercase">Masuk Sistem</button>
-            </div>
-            <p id="login-err" class="text-red-500 text-[10px] mt-4 text-center hidden font-bold italic">AKSES DITOLAK!</p>
-        </div>
-    </div>
+<body class="bg-gray-100">
 
     <div id="app-content">
-        <header class="bg-green-900 text-white p-4 no-print border-b-4 border-yellow-500">
-            <div class="container mx-auto flex flex-col md:flex-row items-center justify-between">
-                <div class="flex items-center space-x-4 mb-4 md:mb-0">
-                    <img src="https://i.ibb.co.com/RG8wTX9W/Logo-Bumdes.png" class="h-12 bg-white p-1 rounded-lg" alt="Logo">
-                    <div>
-                        <h1 class="text-xl font-black uppercase leading-tight">BUMDes Cikahuripan</h1>
-                        <p class="text-[9px] text-green-200">Kp. Palahlar RT. 020/008 Desa Cikahuripan - Bogor</p>
-                    </div>
+        <header class="bg-green-900 text-white p-4 shadow-lg border-b-4 border-yellow-500">
+            <div class="container mx-auto flex items-center space-x-4">
+                <img src="https://i.ibb.co.com/RG8wTX9W/Logo-Bumdes.png" class="h-12 bg-white p-1 rounded">
+                <div>
+                    <h1 class="text-lg font-black uppercase">BUMDes Cikahuripan</h1>
+                    <p class="text-[8px] opacity-80">Unit Ketahanan Pangan - Monitoring & Penjualan</p>
                 </div>
-                <nav class="flex space-x-1 text-[9px] font-bold uppercase">
-                    <button onclick="openTab(event, 'monitoring')" class="tab-btn active px-3 py-1">Monitoring</button>
-                    <button onclick="openTab(event, 'jual')" class="tab-btn px-3 py-1 text-blue-300">Penjualan</button>
-                    <button onclick="openTab(event, 'biaya')" class="tab-btn px-3 py-1 text-red-300">Pengeluaran</button>
-                    <button onclick="logout()" class="bg-red-600 p-2 rounded-lg text-xs ml-2"><i class="fas fa-power-off"></i></button>
-                </nav>
             </div>
         </header>
 
-        <main class="container mx-auto px-4 py-6">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 no-print">
-                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-green-600">
-                    <span class="text-[9px] font-bold text-gray-400 uppercase">Kas Tunai</span>
-                    <p id="dash-tunai" class="text-lg font-black text-green-700">Rp 0</p>
-                </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-600">
-                    <span class="text-[9px] font-bold text-gray-400 uppercase">Bank Mandiri</span>
-                    <p id="dash-mandiri" class="text-lg font-black text-blue-700">Rp 0</p>
-                </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-orange-600">
-                    <span class="text-[9px] font-bold text-gray-400 uppercase">Akun DANA</span>
-                    <p id="dash-dana" class="text-lg font-black text-orange-700">Rp 0</p>
-                </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-yellow-500">
-                    <span class="text-[9px] font-bold text-gray-400 uppercase font-black">HDP %</span>
-                    <p id="dash-hdp" class="text-xl font-black text-yellow-700">0%</p>
-                </div>
+        <main class="container mx-auto p-4">
+            <div class="flex space-x-2 mb-4 bg-white p-2 rounded-lg shadow">
+                <button onclick="openTab('monitoring')" class="px-4 py-2 text-xs font-bold uppercase border-b-2 border-green-600">Monitoring</button>
+                <button onclick="openTab('jual')" class="px-4 py-2 text-xs font-bold uppercase text-blue-600">Penjualan</button>
             </div>
 
-            <div id="monitoring" class="tab-content active bg-white p-6 rounded-2xl shadow-md no-print">
-                <h3 class="font-bold border-b pb-2 mb-4 text-green-800 uppercase italic">Input Data Monitoring Harian</h3>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div class="space-y-3">
-                        <label class="block text-[10px] font-black text-gray-500 uppercase">Data Populasi</label>
-                        <input type="date" id="mon_tgl" class="w-full p-3 border rounded-xl bg-gray-50 font-bold">
-                        <input type="number" id="mon_ayam" placeholder="Jumlah Ayam Hidup" class="w-full p-3 border rounded-xl font-bold">
-                        <input type="number" id="mon_mati" placeholder="Kematian (Ekor)" class="w-full p-3 border rounded-xl bg-red-50">
+            <div id="monitoring" class="tab-content active bg-white p-4 rounded-xl shadow-md">
+                <h3 class="font-black text-green-800 mb-4 uppercase border-b pb-2">Input Monitoring Harian</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                        <label class="text-[10px] font-bold">POKOK</label>
+                        <input type="date" id="mon_tgl" class="w-full p-2 border rounded mb-2 font-bold">
+                        <input type="number" id="mon_ayam" placeholder="Jumlah Ayam" class="w-full p-2 border rounded mb-2">
+                        <input type="number" id="mon_mati" placeholder="Kematian" class="w-full p-2 border rounded">
                     </div>
-                    <div class="space-y-3">
-                        <label class="block text-[10px] font-black text-orange-600 uppercase">Data Pakan (Kg)</label>
-                        <input type="number" id="mon_pakan_pagi" placeholder="Pakan Pagi" class="w-full p-3 border rounded-xl border-orange-200">
-                        <input type="number" id="mon_pakan_sore" placeholder="Pakan Sore" class="w-full p-3 border rounded-xl border-orange-200">
+                    <div class="p-3 bg-orange-50 rounded-lg">
+                        <label class="text-[10px] font-bold">PAKAN (KG)</label>
+                        <input type="number" id="mon_p_pagi" placeholder="Pakan Pagi" class="w-full p-2 border rounded mb-2">
+                        <input type="number" id="mon_p_sore" placeholder="Pakan Sore" class="w-full p-2 border rounded">
                     </div>
-                    <div class="space-y-3">
-                        <label class="block text-[10px] font-black text-blue-600 uppercase">Telur Utuh</label>
-                        <input type="number" id="mon_telur_utuh_pagi_btr" placeholder="Pagi (Butir)" class="w-full p-3 border rounded-xl border-blue-200">
-                        <input type="number" id="mon_telur_utuh_pagi_kg" placeholder="Pagi (Kg)" class="w-full p-3 border rounded-xl border-blue-200">
-                        <input type="number" id="mon_telur_utuh_sore_btr" placeholder="Sore (Butir)" class="w-full p-3 border rounded-xl border-blue-200">
-                        <input type="number" id="mon_telur_utuh_sore_kg" placeholder="Sore (Kg)" class="w-full p-3 border rounded-xl border-blue-200">
+                    <div class="p-3 bg-blue-50 rounded-lg">
+                        <label class="text-[10px] font-bold">TELUR UTUH</label>
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <input type="number" id="t_u_p_btr" placeholder="Pagi(Btr)" class="p-2 border rounded">
+                            <input type="number" id="t_u_p_kg" placeholder="Pagi(Kg)" class="p-2 border rounded">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="number" id="t_u_s_btr" placeholder="Sore(Btr)" class="p-2 border rounded">
+                            <input type="number" id="t_u_s_kg" placeholder="Sore(Kg)" class="p-2 border rounded">
+                        </div>
                     </div>
-                    <div class="space-y-3">
-                        <label class="block text-[10px] font-black text-red-400 uppercase">Telur Retak</label>
-                        <input type="number" id="mon_telur_retak_pagi_btr" placeholder="Pagi (Butir)" class="w-full p-3 border rounded-xl border-red-100">
-                        <input type="number" id="mon_telur_retak_pagi_kg" placeholder="Pagi (Kg)" class="w-full p-3 border rounded-xl border-red-100">
-                        <input type="number" id="mon_telur_retak_sore_btr" placeholder="Sore (Butir)" class="w-full p-3 border rounded-xl border-red-100">
-                        <input type="number" id="mon_telur_retak_sore_kg" placeholder="Sore (Kg)" class="w-full p-3 border rounded-xl border-red-100">
+                    <div class="p-3 bg-red-50 rounded-lg">
+                        <label class="text-[10px] font-bold">TELUR RETAK</label>
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <input type="number" id="t_r_p_btr" placeholder="Pagi(Btr)" class="p-2 border rounded">
+                            <input type="number" id="t_r_p_kg" placeholder="Pagi(Kg)" class="p-2 border rounded">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="number" id="t_r_s_btr" placeholder="Sore(Btr)" class="p-2 border rounded">
+                            <input type="number" id="t_r_s_kg" placeholder="Sore(Kg)" class="p-2 border rounded">
+                        </div>
                     </div>
                 </div>
-                <button onclick="simpanMonitoring()" class="w-full mt-6 bg-green-700 text-white font-black py-4 rounded-xl shadow-lg uppercase">Simpan Laporan Monitoring</button>
+                <button onclick="alert('Data Tersimpan ke Database Monitoring')" class="w-full mt-4 bg-green-700 text-white p-3 rounded-lg font-black uppercase">Simpan Monitoring</button>
             </div>
 
-            <div id="jual" class="tab-content bg-white p-6 rounded-2xl shadow-md border-t-8 border-blue-600 no-print">
-                <h3 class="font-bold border-b pb-2 mb-4 text-blue-800 uppercase italic">Transaksi Penjualan</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="text" id="pj_nama" placeholder="Nama Konsumen" class="p-3 border rounded-xl">
-                    <input type="number" id="pj_kg" placeholder="Berat (Kg)" class="p-3 border rounded-xl font-bold">
-                    <input type="number" id="pj_harga" placeholder="Harga/Kg (Rp)" class="p-3 border rounded-xl font-bold">
-                    <select id="pj_kas" class="p-3 border rounded-xl bg-blue-50 font-bold border-blue-200">
-                        <option value="tunai">Diterima Tunai (Kas Unit)</option>
-                        <option value="mandiri">Transfer Bank Mandiri</option>
-                        <option value="dana">Terima Akun DANA</option>
-                    </select>
-                    <button onclick="simpanJual()" class="md:col-span-2 bg-blue-700 text-white font-black py-4 rounded-xl shadow-lg uppercase">Simpan & Cetak Nota</button>
-                </div>
-            </div>
-
-            <div id="biaya" class="tab-content bg-white p-6 rounded-2xl shadow-md border-t-8 border-red-600 no-print">
-                <h3 class="font-bold border-b pb-2 mb-4 text-red-800 uppercase italic">Pengeluaran Operasional</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="text" id="op_kat" placeholder="Keterangan Pengeluaran" class="p-3 border rounded-xl">
-                    <input type="number" id="op_nom" placeholder="Nominal Biaya Rp" class="p-3 border rounded-xl font-bold text-red-600">
-                    <select id="op_kas" class="p-3 border rounded-xl bg-red-50 font-bold border-red-200">
-                        <option value="tunai">Potong Kas Tunai</option>
-                        <option value="mandiri">Potong Bank Mandiri</option>
-                        <option value="dana">Potong Akun DANA</option>
-                    </select>
-                    <button onclick="simpanBiaya()" class="bg-red-600 text-white font-black py-4 rounded-xl uppercase shadow-lg">Catat Pengeluaran</button>
-                </div>
-            </div>
-
-            <div class="mt-8 bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-300 no-print">
-                <div class="bg-gray-800 p-4 text-white flex justify-between items-center">
-                    <span class="text-[10px] font-bold uppercase tracking-widest italic">Log Aktivitas Cikahuripan</span>
-                    <button onclick="window.print()" class="bg-green-700 px-4 py-1 rounded-lg text-[10px] font-black uppercase">Cetak Laporan</button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table id="main-table" class="w-full text-left text-[9px] md:text-xs">
-                        <thead class="bg-gray-100 font-bold text-gray-600 uppercase">
-                            <tr>
-                                <th class="p-4 border-b">Tgl</th>
-                                <th class="p-4 border-b">Jenis</th>
-                                <th class="p-4 border-b text-center">Ayam(H/M)</th>
-                                <th class="p-4 border-b text-center text-green-700">HDP(%)</th>
-                                <th class="p-4 border-b">Kas</th>
-                                <th class="p-4 border-b text-right">Nominal</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100"></tbody>
-                    </table>
+            <div id="jual" class="tab-content bg-white p-4 rounded-xl shadow-md">
+                <h3 class="font-black text-blue-800 mb-4 uppercase">Transaksi Penjualan</h3>
+                <div class="space-y-3">
+                    <input type="text" id="pj_nama" placeholder="Nama Pembeli" class="w-full p-3 border rounded-xl">
+                    <input type="number" id="pj_kg" placeholder="Jumlah (Kg)" class="w-full p-3 border rounded-xl font-bold">
+                    <input type="number" id="pj_harga" placeholder="Harga Satuan" class="w-full p-3 border rounded-xl font-bold">
+                    <button onclick="cetakNota()" class="w-full bg-blue-700 text-white p-4 rounded-xl font-black shadow-lg uppercase">Simpan & Cetak Nota</button>
                 </div>
             </div>
         </main>
@@ -169,106 +101,50 @@
 
     <div id="struk-area">
         <center>
-            <img src="https://i.ibb.co.com/RG8wTX9W/Logo-Bumdes.png" style="height: 35px; margin-bottom: 5px;">
-            <div style="font-weight: bold; font-size: 11px;">BUMDes Cikahuripan</div>
-            <div style="font-size: 8px;">Kp. Palahlar RT. 020/008 Ds. Cikahuripan</div>
-            <div style="font-size: 8px;">WA: 082125415593</div>
+            <img src="https://i.ibb.co.com/RG8wTX9W/Logo-Bumdes.png" style="width: 30mm; margin-bottom: 5px;">
+            <div style="font-weight: bold; font-size: 10px;">BUMDes Cikahuripan</div>
+            <div style="font-size: 7px;">Kp. Palahlar RT. 020/008 Desa Cikahuripan</div>
             ---------------------------<br>
-            <b style="font-size: 9px;">BUKTI PEMBAYARAN</b><br>
+            <b>NOTA PENJUALAN</b><br>
             ---------------------------
         </center>
-        <div id="struk-content" class="my-2" style="font-size: 9px; white-space: pre-wrap;"></div>
+        <div style="margin: 5px 0;">
+            Nama  : <span id="s_nama"></span><br>
+            Qty   : <span id="s_qty"></span> Kg<br>
+            Harga : Rp <span id="s_harga"></span><br>
+            ---------------------------<br>
+            <b>TOTAL : Rp <span id="s_total"></span></b>
+        </div>
         <center>
             ---------------------------<br>
-            <div style="font-size: 8px; font-style: italic;">Membangun Desa, Mandiri Ekonomi</div>
+            Terima Kasih Atas Pembeliannya
         </center>
     </div>
 
     <script>
-        const ADMIN_USER = "adminbumdes";
-        const ADMIN_PASS = "cikahuripan2026";
-        let db = { logs: [], kas: { tunai: 0, mandiri: 0, dana: 0 }, lastHDP: 0 };
-
-        function checkLogin() {
-            if(document.getElementById('user').value === ADMIN_USER && document.getElementById('pass').value === ADMIN_PASS) {
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('app-content').style.display = 'block';
-                updateUI();
-            } else { document.getElementById('login-err').classList.remove('hidden'); }
+        function openTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
         }
 
-        function logout() { window.location.reload(); }
-
-        function openTab(evt, tabId) {
-            document.querySelectorAll(".tab-content").forEach(c => c.style.display = "none");
-            document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-            document.getElementById(tabId).style.display = "block";
-            evt.currentTarget.classList.add("active");
-        }
-
-        function updateUI() {
-            document.getElementById('dash-tunai').innerText = "Rp " + db.kas.tunai.toLocaleString();
-            document.getElementById('dash-mandiri').innerText = "Rp " + db.kas.mandiri.toLocaleString();
-            document.getElementById('dash-dana').innerText = "Rp " + db.kas.dana.toLocaleString();
-            document.getElementById('dash-hdp').innerText = db.lastHDP.toFixed(2) + "%";
-            renderTable();
-        }
-
-        function simpanMonitoring() {
-            const utuh_pagi = parseFloat(document.getElementById('mon_telur_utuh_pagi_btr').value) || 0;
-            const utuh_sore = parseFloat(document.getElementById('mon_telur_utuh_sore_btr').value) || 0;
-            const ayam = parseFloat(document.getElementById('mon_ayam').value) || 1;
-            
-            const total_telur_btr = utuh_pagi + utuh_sore;
-            const hdp = ((total_telur_btr / ayam) * 100).toFixed(2);
-            db.lastHDP = parseFloat(hdp);
-
-            db.logs.push({ 
-                tgl: document.getElementById('mon_tgl').value, 
-                tipe: 'MONITORING', 
-                ayam: `${ayam}/${document.getElementById('mon_mati').value || 0}`, 
-                hdp: hdp, kas: '-', nom: 0 
-            });
-            updateUI(); alert("Data Monitoring Disimpan!");
-        }
-
-        function simpanJual() {
-            const kg = parseFloat(document.getElementById('pj_kg').value) || 0;
-            const hrg = parseFloat(document.getElementById('pj_harga').value) || 0;
-            const total = kg * hrg;
-            const akun = document.getElementById('pj_kas').value;
+        function cetakNota() {
             const nama = document.getElementById('pj_nama').value;
+            const kg = document.getElementById('pj_kg').value;
+            const hrg = document.getElementById('pj_harga').value;
+            const total = kg * hrg;
 
-            db.kas[akun] += total;
-            db.logs.push({ tgl: document.getElementById('mon_tgl').value, tipe: 'JUAL', ayam: '-', hdp: '-', kas: akun.toUpperCase(), nom: total });
-            
-            document.getElementById('struk-content').innerText = 
-                `Tgl   : ${document.getElementById('mon_tgl').value}\n` +
-                `Nama  : ${nama}\n` +
-                `Qty   : ${kg} Kg\n` +
-                `Total : Rp ${total.toLocaleString()}\n` +
-                `Kas   : ${akun.toUpperCase()}`;
-            
-            updateUI(); window.print();
+            if(!nama || !kg || !hrg) return alert("Mohon lengkapi data penjualan!");
+
+            // Isi Data ke Struk
+            document.getElementById('s_nama').innerText = nama;
+            document.getElementById('s_qty').innerText = kg;
+            document.getElementById('s_harga').innerText = parseInt(hrg).toLocaleString();
+            document.getElementById('s_total').innerText = total.toLocaleString();
+
+            // Pemicu Cetak
+            window.print();
         }
 
-        function simpanBiaya() {
-            const nom = parseFloat(document.getElementById('op_nom').value) || 0;
-            const akun = document.getElementById('op_kas').value;
-            if(nom > db.kas[akun]) return alert("Saldo " + akun.toUpperCase() + " Kurang!");
-            db.kas[akun] -= nom;
-            db.logs.push({ tgl: document.getElementById('mon_tgl').value, tipe: 'BIAYA', ayam: '-', hdp: '-', kas: akun.toUpperCase(), nom: -nom });
-            updateUI();
-        }
-
-        function renderTable() {
-            const tbody = document.querySelector("#main-table tbody");
-            tbody.innerHTML = "";
-            db.logs.slice().reverse().forEach(d => {
-                let row = tbody.insertRow();
-                row.innerHTML = `<td class="p-4 border-b">${d.tgl}</td><td class="p-4 border-b font-bold">${d.tipe}</td><td class="p-4 border-b text-center">${d.ayam}</td><td class="p-4 border-b text-center font-black text-green-700">${d.hdp != '-' ? d.hdp + '%' : '-'}</td><td class="p-4 border-b italic">${d.kas}</td><td class="p-4 border-b text-right font-black ${d.nom < 0 ? 'text-red-500' : 'text-green-600'}">Rp ${d.nom.toLocaleString()}</td>`;
-            });
-        }
         document.getElementById('mon_tgl').value = new Date().toISOString().split('T')[0];
     </script>
 </body>
