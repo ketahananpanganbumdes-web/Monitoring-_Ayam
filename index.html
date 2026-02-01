@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BUMDes Mobile - Calibrated V22.2</title>
+    <title>BUMDes Enterprise - V22.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -15,228 +15,378 @@
             #sidebar { position: fixed; left: -100%; z-index: 50; height: 100%; transition: 0.3s; }
             #sidebar.active { left: 0; }
         }
-        input, select, button { min-height: 48px; }
-        #loading-overlay { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.8); z-index: 10000; justify-content: center; 
-            align-items: center; color: white; flex-direction: column; 
+        input, select { border-radius: 12px !important; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        @media print {
+            .no-print { display: none !important; }
+            #laporan { display: block !important; }
+            body { background: white; }
         }
-        .sidebar-link.active { background-color: #166534; border-left: 4px solid #facc15; }
     </style>
 </head>
-<body class="bg-gray-100 font-sans antialiased text-gray-900">
+<body class="bg-slate-100 font-sans text-slate-900">
 
-    <div id="loading-overlay">
-        <div class="animate-spin rounded-full h-10 w-10 border-4 border-yellow-500 border-t-transparent mb-4"></div>
-        <p class="font-black text-[10px] uppercase italic tracking-widest">Sinkronisasi Cloud...</p>
+    <div id="loading-overlay" class="fixed inset-0 bg-black/80 z-[9999] hidden flex-col items-center justify-center text-white">
+        <div class="animate-spin rounded-full h-12 w-12 border-4 border-yellow-500 border-t-transparent mb-4"></div>
+        <p class="font-black text-xs uppercase italic tracking-widest">Sinkronisasi Data BUMDes...</p>
     </div>
 
-    <div id="login-screen" class="min-h-screen flex items-center justify-center bg-green-900 p-6">
-        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm border-t-8 border-yellow-500 text-center">
-            <img src="https://i.ibb.co.com/RG8wTX9W/Logo-Bumdes.png" class="h-16 mb-4 mx-auto">
-            <h2 class="font-black text-xl text-green-900 uppercase italic">BUMDes Mobile</h2>
-            <button onclick="checkLogin()" class="w-full bg-green-700 text-white font-black py-4 rounded-xl shadow-lg uppercase mt-6 active:scale-95 transition">Masuk System</button>
+    <div id="login-screen" class="min-h-screen flex items-center justify-center bg-green-950 p-6">
+        <div class="bg-white p-10 rounded-[40px] shadow-2xl w-full max-w-sm border-t-[12px] border-yellow-500 text-center">
+            <img src="https://i.ibb.co.com/RG8wTX9W/Logo-Bumdes.png" class="h-20 mb-6 mx-auto">
+            <h2 class="font-black text-2xl text-green-900 uppercase leading-tight mb-2">Sistem Informasi BUMDes</h2>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-8">Unit Ketahanan Pangan</p>
+            <button onclick="checkLogin()" class="w-full bg-green-700 hover:bg-green-800 text-white font-black py-5 rounded-2xl shadow-xl transition-all transform active:scale-95 uppercase">Buka Panel Kendali</button>
         </div>
     </div>
 
     <div id="app-content" class="flex flex-col md:flex-row min-h-screen">
-        <header class="md:hidden bg-green-900 text-white p-4 flex justify-between items-center sticky top-0 z-40">
-            <span class="font-black text-sm uppercase">Cikahuripan Mobile</span>
-            <button onclick="toggleSidebar()" class="text-2xl p-2"><i class="fas fa-bars"></i></button>
+        <header class="md:hidden bg-green-900 text-white p-5 flex justify-between items-center sticky top-0 z-40 shadow-xl">
+            <div class="flex items-center gap-3">
+                <img src="https://i.ibb.co.com/RG8wTX9W/Logo-Bumdes.png" class="h-8 bg-white p-1 rounded-lg">
+                <span class="font-black text-xs uppercase italic">Cikahuripan Enterprise</span>
+            </div>
+            <button onclick="toggleSidebar()" class="text-2xl"><i class="fas fa-grid-2"></i><i class="fas fa-bars"></i></button>
         </header>
 
-        <aside id="sidebar" class="w-64 bg-green-900 text-white flex-shrink-0 flex flex-col shadow-2xl overflow-y-auto">
-            <div class="p-8 text-center hidden md:block border-b border-green-800">
-                <img src="https://i.ibb.co.com/RG8wTX9W/Logo-Bumdes.png" class="h-14 mx-auto bg-white p-2 rounded-xl mb-2">
-                <h1 class="text-[10px] font-black uppercase text-yellow-500 italic">Cloud Production</h1>
+        <aside id="sidebar" class="w-72 bg-green-950 text-white flex-shrink-0 flex flex-col shadow-2xl no-print">
+            <div class="p-10 text-center hidden md:block">
+                <img src="https://i.ibb.co.com/RG8wTX9W/Logo-Bumdes.png" class="h-16 mx-auto bg-white p-2 rounded-2xl mb-4">
+                <h1 class="text-xs font-black uppercase text-yellow-500 tracking-tighter">Manajemen BUMDes V22.5</h1>
             </div>
-            <nav class="flex-1 p-4 space-y-2 text-[11px] font-black uppercase">
-                <button onclick="openTabMobile(event, 'dashboard')" class="sidebar-link active w-full flex items-center p-4 rounded-2xl transition"><i class="fas fa-th-large mr-3 text-lg"></i> Dashboard</button>
-                <button onclick="openTabMobile(event, 'monitoring')" class="sidebar-link w-full flex items-center p-4 rounded-2xl transition text-yellow-200"><i class="fas fa-edit mr-3 text-lg"></i> Input Harian</button>
-                <button onclick="openTabMobile(event, 'jual')" class="sidebar-link w-full flex items-center p-4 rounded-2xl transition text-blue-300"><i class="fas fa-shopping-cart mr-3 text-lg"></i> Penjualan</button>
-                <button onclick="openTabMobile(event, 'laporan')" class="sidebar-link w-full flex items-center p-4 rounded-2xl transition text-green-300 font-bold"><i class="fas fa-file-contract mr-3 text-lg"></i> Modul Audit</button>
-                <button onclick="logout()" class="w-full flex items-center p-4 bg-red-700 rounded-2xl mt-10"><i class="fas fa-power-off mr-3 text-lg"></i> Logout</button>
+            <nav class="flex-1 px-4 space-y-2 text-[11px] font-black uppercase">
+                <button onclick="openTab(event, 'dashboard')" class="sidebar-link active w-full flex items-center p-4 rounded-2xl transition-all hover:bg-green-800"><i class="fas fa-home mr-4 text-lg text-yellow-500"></i> Dashboard</button>
+                <button onclick="openTab(event, 'monitoring')" class="sidebar-link w-full flex items-center p-4 rounded-2xl transition-all hover:bg-green-800"><i class="fas fa-file-signature mr-4 text-lg text-blue-400"></i> Input Produksi</button>
+                <button onclick="openTab(event, 'jual')" class="sidebar-link w-full flex items-center p-4 rounded-2xl transition-all hover:bg-green-800"><i class="fas fa-shopping-cart mr-4 text-lg text-green-400"></i> Penjualan</button>
+                <button onclick="openTab(event, 'biaya')" class="sidebar-link w-full flex items-center p-4 rounded-2xl transition-all hover:bg-green-800"><i class="fas fa-wallet mr-4 text-lg text-red-400"></i> Pengeluaran</button>
+                <button onclick="openTab(event, 'laporan')" class="sidebar-link w-full flex items-center p-4 rounded-2xl transition-all bg-yellow-600 bg-green-950 mt-4"><i class="fas fa-print mr-4 text-lg text-yellow-500"></i> Laporan Audit Desa</button>
+                <button onclick="logout()" class="w-full flex items-center p-4 bg-red-900/50 rounded-2xl mt-10 hover:bg-red-800 transition-all"><i class="fas fa-power-off mr-4 text-lg"></i> Keluar System</button>
             </nav>
         </aside>
 
-        <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+        <main class="flex-1 p-4 md:p-10 overflow-y-auto">
             
-            <div id="dashboard" class="tab-content active space-y-4">
-                <h3 class="font-black text-green-900 uppercase text-xs italic">Operasional Hari Ini</h3>
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border-b-4 border-green-600">
-                        <span class="text-[8px] text-gray-400 block uppercase font-bold">Ayam Hidup</span>
-                        <p id="dash-ayam" class="text-xl font-black font-mono">0</p>
+            <div id="dashboard" class="tab-content active space-y-6">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-white p-6 rounded-[32px] shadow-sm border-b-4 border-green-600">
+                        <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Populasi Ayam</span>
+                        <p id="dash-ayam" class="text-2xl font-black">0</p>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border-b-4 border-blue-600">
-                        <span class="text-[8px] text-gray-400 block uppercase font-bold">Produksi Utuh</span>
-                        <p id="dash-u" class="text-[10px] font-black leading-tight text-blue-800">0 Btr / 0 Kg</p>
+                    <div class="bg-white p-6 rounded-[32px] shadow-sm border-b-4 border-blue-600">
+                        <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Produksi Utuh</span>
+                        <p id="dash-u" class="text-xl font-black text-blue-700">0 Btr</p>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border-b-4 border-red-600">
-                        <span class="text-[8px] text-gray-400 block uppercase font-bold">Produksi Retak</span>
-                        <p id="dash-r" class="text-[10px] font-black leading-tight text-red-800">0 Btr / 0 Kg</p>
+                    <div class="bg-white p-6 rounded-[32px] shadow-sm border-b-4 border-red-600">
+                        <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Produksi Retak</span>
+                        <p id="dash-r" class="text-xl font-black text-red-700">0 Btr</p>
                     </div>
-                    <div class="bg-yellow-50 p-4 rounded-2xl shadow-sm border-b-4 border-yellow-500">
-                        <span class="text-[8px] text-yellow-700 block uppercase font-bold">HDP Produksi</span>
-                        <p id="dash-hdp" class="text-lg font-black text-yellow-900">0%</p>
+                    <div class="bg-yellow-500 p-6 rounded-[32px] shadow-sm text-white">
+                        <span class="text-[8px] font-black uppercase tracking-widest block mb-1 opacity-80">Saldo Kas Unit</span>
+                        <p id="dash-kas" class="text-xl font-black">Rp 0</p>
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-[40px] shadow-sm">
+                    <h4 class="text-[10px] font-black uppercase text-slate-400 mb-6 italic tracking-widest">Tren Produktivitas (HDP %)</h4>
+                    <canvas id="prodChart" height="100"></canvas>
+                </div>
+            </div>
+
+            <div id="monitoring" class="tab-content">
+                <div class="bg-white p-8 rounded-[40px] shadow-sm max-w-2xl mx-auto border border-slate-100">
+                    <h3 class="font-black text-green-900 mb-8 uppercase italic text-sm border-l-4 border-green-700 pl-4">Form Monitoring Produksi (A-M)</h3>
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="text-[10px] font-black uppercase text-slate-400 ml-2">Tanggal</label><input type="date" id="m_tgl" class="w-full p-4 bg-slate-100 font-bold border-none outline-none"></div>
+                            <div><label class="text-[10px] font-black uppercase text-slate-400 ml-2">Ayam Hidup</label><input type="number" id="m_ayam" class="w-full p-4 bg-slate-100 font-bold border-none outline-none"></div>
+                        </div>
+                        
+                        <div class="bg-orange-50 p-6 rounded-3xl border border-orange-100">
+                            <span class="text-[10px] font-black text-orange-700 uppercase italic">Pakan (Kg)</span>
+                            <div class="grid grid-cols-2 gap-4 mt-3">
+                                <input type="number" id="m_pakan_pagi" placeholder="Pagi" class="p-4 rounded-xl text-sm font-bold bg-white">
+                                <input type="number" id="m_pakan_sore" placeholder="Sore" class="p-4 rounded-xl text-sm font-bold bg-white">
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 p-6 rounded-3xl border border-blue-100 text-blue-700">
+                            <span class="text-[10px] font-black uppercase italic">Telur Utuh (Btr & Kg)</span>
+                            <div class="grid grid-cols-2 gap-4 mt-3">
+                                <input type="number" id="m_up_btr" placeholder="Pagi (Btr)" class="p-4 rounded-xl text-sm font-bold bg-white text-slate-900">
+                                <input type="number" id="m_up_kg" placeholder="Pagi (Kg)" class="p-4 rounded-xl text-sm font-bold bg-white text-slate-900">
+                                <input type="number" id="m_us_btr" placeholder="Sore (Btr)" class="p-4 rounded-xl text-sm font-bold bg-white text-slate-900">
+                                <input type="number" id="m_us_kg" placeholder="Sore (Kg)" class="p-4 rounded-xl text-sm font-bold bg-white text-slate-900">
+                            </div>
+                        </div>
+
+                        <div class="bg-red-50 p-6 rounded-3xl border border-red-100 text-red-700">
+                            <span class="text-[10px] font-black uppercase italic">Telur Retak (Btr & Kg)</span>
+                            <div class="grid grid-cols-2 gap-4 mt-3">
+                                <input type="number" id="m_rp_btr" placeholder="Pagi (Btr)" class="p-4 rounded-xl text-sm font-bold bg-white text-slate-900">
+                                <input type="number" id="m_rp_kg" placeholder="Pagi (Kg)" class="p-4 rounded-xl text-sm font-bold bg-white text-slate-900">
+                                <input type="number" id="m_rs_btr" placeholder="Sore (Btr)" class="p-4 rounded-xl text-sm font-bold bg-white text-slate-900">
+                                <input type="number" id="m_rs_kg" placeholder="Sore (Kg)" class="p-4 rounded-xl text-sm font-bold bg-white text-slate-900">
+                            </div>
+                        </div>
+
+                        <button onclick="saveMonitoring()" class="w-full bg-green-700 hover:bg-green-800 text-white font-black py-6 rounded-2xl shadow-xl uppercase transition-all active:scale-95">Simpan Data & Bersihkan</button>
                     </div>
                 </div>
             </div>
 
-            <div id="monitoring" class="tab-content space-y-4">
-                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
-                    <h3 class="text-xs font-black text-green-900 mb-4 uppercase italic">Input Produksi (Sheet Monitoring)</h3>
+            <div id="jual" class="tab-content">
+                <div class="bg-white p-8 rounded-[40px] shadow-sm max-w-xl mx-auto border-t-[12px] border-blue-700">
+                    <h3 class="font-black text-blue-900 mb-6 uppercase italic text-sm">Transaksi Penjualan</h3>
+                    <div class="space-y-4">
+                        <input type="text" id="j_nama" placeholder="Nama Pembeli" class="w-full p-5 bg-slate-50 font-bold border-none outline-none">
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="p-5 bg-blue-50 rounded-3xl">
+                                <label class="text-[9px] font-black text-blue-700 uppercase block mb-2">Telur Utuh</label>
+                                <input type="number" id="j_u_kg" placeholder="Kg" class="w-full p-3 rounded-xl mb-2 font-bold">
+                                <input type="number" id="j_u_hrg" placeholder="Harga/Kg" class="w-full p-3 rounded-xl font-bold">
+                            </div>
+                            <div class="p-5 bg-red-50 rounded-3xl">
+                                <label class="text-[9px] font-black text-red-700 uppercase block mb-2">Telur Retak</label>
+                                <input type="number" id="j_r_kg" placeholder="Kg" class="w-full p-3 rounded-xl mb-2 font-bold">
+                                <input type="number" id="j_r_hrg" placeholder="Harga/Kg" class="p-3 w-full rounded-xl font-bold">
+                            </div>
+                        </div>
+
+                        <select id="j_kas" class="w-full p-5 bg-slate-100 font-black text-xs uppercase">
+                            <option value="TUNAI">KAS TUNAI (UNIT)</option>
+                            <option value="MANDIRI">BANK MANDIRI</option>
+                            <option value="DANA">DANA</option>
+                        </select>
+                        <button onclick="savePenjualan()" class="w-full bg-blue-800 text-white font-black py-6 rounded-2xl uppercase shadow-lg active:scale-95 transition-all">Simpan Transaksi</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="biaya" class="tab-content">
+    <div class="bg-white p-8 rounded-[40px] shadow-sm max-w-xl mx-auto border-t-[12px] border-red-700">
+        <h3 class="font-black text-red-900 mb-6 uppercase italic text-sm">Input Biaya Operasional</h3>
+        <div class="space-y-4">
+            <select id="b_kat" class="w-full p-5 bg-slate-50 font-black text-xs uppercase">
+                <option value="PAKAN">PEMBELIAN PAKAN</option>
+                <option value="GAJI">GAJI PEGAWAI</option>
+                <option value="OBAT">OBAT & VITAMIN</option>
+                <option value="LISTRIK">LISTRIK & AIR</option>
+                <option value="LAINNYA">BIAYA LAIN-LAIN</option>
+            </select>
+            
+            <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Sumber Dana Keluar:</label>
+            <select id="b_sumber_kas" class="w-full p-5 bg-yellow-50 font-black text-xs uppercase border-2 border-yellow-200">
+                <option value="TUNAI">KAS TUNAI (UNIT)</option>
+                <option value="MANDIRI">BANK MANDIRI</option>
+                <option value="DANA">AKUN DANA BUMDES</option>
+            </select>
+
+            <input type="text" id="b_ket" placeholder="Keterangan Detail (Contoh: Beli Pakan 10 Sak)" class="w-full p-5 bg-slate-50 font-bold">
+            <input type="number" id="b_nom" placeholder="Nominal Rp" class="w-full p-5 bg-red-50 text-red-700 font-black text-xl">
+            
+            <button onclick="saveBiaya()" class="w-full bg-red-700 text-white font-black py-6 rounded-2xl uppercase active:scale-95 transition-all">Catat Pengeluaran</button>
+        </div>
+    </div>
+</div>
+
+            <div id="laporan" class="tab-content">
+                <div class="bg-white p-10 rounded-[40px] shadow-xl" id="print-area">
+                    <div class="text-center mb-10 border-b-4 border-double border-slate-900 pb-6">
+                        <img src="https://i.ibb.co.com/RG8wTX9W/Logo-Bumdes.png" class="h-16 mx-auto mb-4">
+                        <h1 class="text-2xl font-black uppercase">LAPORAN PERTANGGUNGJAWABAN HARIAN</h1>
+                        <p class="text-xs font-bold uppercase tracking-widest italic">Unit Usaha Peternakan Ayam Petelur BUMDes Cikahuripan</p>
+                        <p id="rep-tgl" class="mt-4 text-sm font-black"></p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+                        <div class="p-6 bg-slate-50 rounded-3xl border-2 border-slate-100">
+                            <h5 class="text-[10px] font-black uppercase text-slate-400 mb-4 italic">Kinerja Produksi</h5>
+                            <div class="space-y-2 font-bold text-sm">
+                                <div class="flex justify-between border-b pb-1"><span>Produksi Utuh</span> <span id="r-u">0 Btr</span></div>
+                                <div class="flex justify-between border-b pb-1"><span>Produksi Retak</span> <span id="r-r">0 Btr</span></div>
+                                <div class="flex justify-between border-b pb-1"><span>HDP Harian</span> <span id="r-hdp" class="text-green-700">0%</span></div>
+                            </div>
+                        </div>
+                        <div class="p-6 bg-slate-50 rounded-3xl border-2 border-slate-100">
+                            <h5 class="text-[10px] font-black uppercase text-slate-400 mb-4 italic">Ringkasan Kas (Rupiah)</h5>
+                            <div class="space-y-2 font-bold text-sm text-right">
+                                <div class="flex justify-between border-b pb-1"><span>Pemasukan</span> <span id="r-in" class="text-blue-700">Rp 0</span></div>
+                                <div class="flex justify-between border-b pb-1"><span>Pengeluaran</span> <span id="r-out" class="text-red-700">Rp 0</span></div>
+                                <div class="flex justify-between border-b pb-1"><span>Saldo Akhir</span> <span id="r-saldo" class="bg-yellow-400 px-2 rounded">Rp 0</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <table class="w-full text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-slate-900 text-white uppercase font-black italic">
+                                <th class="p-4 border">Waktu</th>
+                                <th class="p-4 border">Uraian Aktivitas</th>
+                                <th class="p-4 border text-right">Nominal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="log-body" class="font-bold uppercase text-[10px]"></tbody>
+                    </table>
+
+                    <div class="mt-20 flex justify-between px-10 text-center text-xs font-black uppercase italic">
+                        <div>Mengetahui,<br>Ketua BUMDes<br><br><br><br>( ............................ )</div>
+                        <div>Dibuat Oleh,<br>Kepala Unit Produksi<br><br><br><br>( ............................ )</div>
+                    </div>
                     
-                    <div class="grid grid-cols-2 gap-2 mb-4 bg-gray-50 p-3 rounded-2xl">
-                        <input type="date" id="mon_tgl" class="p-2 rounded-xl font-bold text-xs">
-                        <input type="number" id="mon_ayam" placeholder="Ayam Hidup" class="p-2 rounded-xl text-xs font-bold">
-                    </div>
-
-                    <div class="bg-orange-50 p-3 rounded-2xl mb-4">
-                        <label class="text-[9px] font-black text-orange-600 uppercase">Input Pakan (Kg)</label>
-                        <div class="grid grid-cols-2 gap-2 mt-1">
-                            <input type="number" id="p_pagi" placeholder="Pagi" class="p-3 rounded-xl text-xs bg-white">
-                            <input type="number" id="p_sore" placeholder="Sore" class="p-3 rounded-xl text-xs bg-white">
-                        </div>
-                    </div>
-
-                    <div class="bg-blue-50 p-3 rounded-2xl mb-4">
-                        <label class="text-[9px] font-black text-blue-600 uppercase italic font-bold">Telur Utuh (Kg & Butir)</label>
-                        <div class="grid grid-cols-2 gap-2 mt-2">
-                            <input type="number" id="up_btr" placeholder="Pagi (Btr)" class="p-3 rounded-xl text-xs font-bold bg-white">
-                            <input type="number" id="up_kg" placeholder="Pagi (Kg)" class="p-3 rounded-xl text-xs font-bold bg-white">
-                            <input type="number" id="us_btr" placeholder="Sore (Btr)" class="p-3 rounded-xl text-xs font-bold bg-white">
-                            <input type="number" id="us_kg" placeholder="Sore (Kg)" class="p-3 rounded-xl text-xs font-bold bg-white">
-                        </div>
-                    </div>
-
-                    <div class="bg-red-50 p-3 rounded-2xl mb-6">
-                        <label class="text-[9px] font-black text-red-600 uppercase italic font-bold">Telur Retak (Kg & Butir)</label>
-                        <div class="grid grid-cols-2 gap-2 mt-2">
-                            <input type="number" id="rp_btr" placeholder="Pagi (Btr)" class="p-3 rounded-xl text-xs font-bold bg-white">
-                            <input type="number" id="rp_kg" placeholder="Pagi (Kg)" class="p-3 rounded-xl text-xs font-bold bg-white">
-                            <input type="number" id="rs_btr" placeholder="Sore (Btr)" class="p-3 rounded-xl text-xs font-bold bg-white">
-                            <input type="number" id="rs_kg" placeholder="Sore (Kg)" class="p-3 rounded-xl text-xs font-bold bg-white">
-                        </div>
-                    </div>
-
-                    <button onclick="simpanMonitoring()" class="w-full bg-green-700 text-white font-black py-5 rounded-2xl uppercase text-xs active:scale-95 transition shadow-lg">Sync ke Google Sheet (Column A-M)</button>
+                    <button onclick="window.print()" class="no-print w-full mt-10 bg-slate-900 text-white font-black py-6 rounded-2xl uppercase italic">Print Laporan Untuk Arsip Desa</button>
                 </div>
-            </div>
-
-            <div id="jual" class="tab-content bg-white p-5 rounded-3xl shadow-sm border-t-8 border-blue-600">
-                <h3 class="font-black text-blue-900 mb-4 uppercase text-xs">Penjualan</h3>
-                <input type="text" id="pj_nama" placeholder="Nama Pembeli" class="w-full p-4 bg-gray-50 rounded-2xl font-bold mb-3">
-                <div class="grid grid-cols-2 gap-2 mb-3">
-                    <input type="number" id="pj_kg" placeholder="Kg" class="p-4 bg-gray-50 rounded-2xl font-black">
-                    <input type="number" id="pj_hrg" placeholder="Harga/Kg" class="p-4 bg-gray-50 rounded-2xl font-black">
-                </div>
-                <button onclick="alert('Penjualan Tersimpan!')" class="w-full bg-blue-700 text-white py-5 rounded-2xl font-black uppercase italic">Simpan Jual</button>
-            </div>
-
-            <div id="laporan" class="tab-content bg-white p-5 rounded-3xl shadow-sm border-t-8 border-green-800 text-center">
-                <i class="fas fa-file-invoice text-5xl text-green-700 mb-4"></i>
-                <p class="font-black uppercase text-xs mb-6">Modul Audit Siap Cetak</p>
-                <button onclick="window.print()" class="w-full bg-green-800 text-white py-5 rounded-2xl font-black uppercase">Cetak Report Hari Ini</button>
             </div>
 
         </main>
     </div>
 
     <script>
-        // MASUKKAN URL GOOGLE APPS SCRIPT BAPAK DI SINI
-        const CLOUD_URL = "https://script.google.com/macros/s/AKfycbwUKcOi-555JhAN0_Zr2boUfA1bvA1stDi5PMacpIzM-F-oh9ETpnkSGRaOUGXgNlssdQ/exec";
+        const CLOUD_URL = "https://script.google.com/macros/s/AKfycbx5MQf3IXRKSm3vD04uwvhCy3hvZBz83umiYma6PvYlxDD7hXFsEnrdiCTsdcFXep2e7g/exec";
         
-        let db = { summary: { ayam: 0, u_kg: 0, u_btr: 0, r_kg: 0, r_btr: 0 } };
+        let db = { 
+            sum: { ayam: 0, u: 0, r: 0, in: 0, out: 0 },
+            logs: []
+        };
 
         function checkLogin() {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-content').style.display = 'flex';
+            initChart();
             updateUI();
         }
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
 
-        function openTabMobile(evt, tabId) {
+        function openTab(evt, tabId) {
             document.querySelectorAll(".tab-content").forEach(c => c.style.display = "none");
-            document.querySelectorAll(".sidebar-link").forEach(b => b.classList.remove("active"));
+            document.querySelectorAll(".sidebar-link").forEach(b => b.classList.remove("active", "bg-green-800", "bg-yellow-600"));
             document.getElementById(tabId).style.display = "block";
             evt.currentTarget.classList.add("active");
+            if(tabId === 'laporan') refreshReport();
             if (window.innerWidth < 768) toggleSidebar();
         }
 
         function logout() { window.location.reload(); }
 
-        function updateUI() {
-            document.getElementById('dash-ayam').innerText = db.summary.ayam;
-            document.getElementById('dash-u').innerText = `${db.summary.u_btr} Btr / ${db.summary.u_kg.toFixed(1)} Kg`;
-            document.getElementById('dash-r').innerText = `${db.summary.r_btr} Btr / ${db.summary.r_kg.toFixed(1)} Kg`;
-            
-            const hdp = db.summary.ayam > 0 ? ((db.summary.u_btr / db.summary.ayam) * 100).toFixed(2) : 0;
-            document.getElementById('dash-hdp').innerText = hdp + "%";
+        function initChart() {
+            const ctx = document.getElementById('prodChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+                    datasets: [{
+                        label: 'HDP %',
+                        data: [72, 75, 74, 80, 82, 81, 85],
+                        borderColor: '#15803d',
+                        backgroundColor: 'rgba(21, 128, 61, 0.1)',
+                        fill: true, tension: 0.4
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
         }
 
-        async function syncToCloud(payload) {
+        function updateUI() {
+            document.getElementById('dash-ayam').innerText = db.sum.ayam;
+            document.getElementById('dash-u').innerText = db.sum.u + " Btr";
+            document.getElementById('dash-r').innerText = db.sum.r + " Btr";
+            document.getElementById('dash-kas').innerText = "Rp " + (db.sum.in - db.sum.out).toLocaleString();
+        }
+
+        function refreshReport() {
+            document.getElementById('r-u').innerText = db.sum.u + " Btr";
+            document.getElementById('r-r').innerText = db.sum.r + " Btr";
+            document.getElementById('r-in').innerText = "Rp " + db.sum.in.toLocaleString();
+            document.getElementById('r-out').innerText = "Rp " + db.sum.out.toLocaleString();
+            document.getElementById('r-saldo').innerText = "Rp " + (db.sum.in - db.sum.out).toLocaleString();
+            document.getElementById('r-hdp').innerText = db.sum.ayam > 0 ? ((db.sum.u / db.sum.ayam) * 100).toFixed(1) + "%" : "0%";
+            document.getElementById('rep-tgl').innerText = "TGL: " + new Date().toLocaleDateString('id-ID', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'});
+
+            const body = document.getElementById('log-body');
+            body.innerHTML = db.logs.map(l => `<tr class="border-b"><td class="p-4 border">${l.time}</td><td class="p-4 border">${l.desc}</td><td class="p-4 border text-right">${l.val}</td></tr>`).join('');
+        }
+
+        async function sync(payload) {
             document.getElementById('loading-overlay').style.display = 'flex';
             try {
-                // Menggunakan fetch dengan mode 'cors' atau 'no-cors' tergantung setup GAS
-                await fetch(CLOUD_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    cache: 'no-cache',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                await fetch(CLOUD_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
                 return true;
-            } catch (e) {
-                console.error("Error Sync:", e);
-                return false;
-            } finally {
-                document.getElementById('loading-overlay').style.display = 'none';
-            }
+            } catch (e) { return false; }
+            finally { document.getElementById('loading-overlay').style.display = 'none'; }
         }
 
-        async function simpanMonitoring() {
-            const rowData = {
-                sheetName: "Monitoring", // Identifikasi nama sheet di Apps Script
-                A: document.getElementById('mon_tgl').value,
-                B: parseFloat(document.getElementById('mon_ayam').value) || 0,
-                C: 0, // Kematian (Default 0)
-                D: parseFloat(document.getElementById('p_pagi').value) || 0,
-                E: parseFloat(document.getElementById('p_sore').value) || 0,
-                F: parseFloat(document.getElementById('up_btr').value) || 0,
-                G: parseFloat(document.getElementById('up_kg').value) || 0,
-                H: parseFloat(document.getElementById('us_btr').value) || 0,
-                I: parseFloat(document.getElementById('us_kg').value) || 0,
-                J: parseFloat(document.getElementById('rp_btr').value) || 0,
-                K: parseFloat(document.getElementById('rp_kg').value) || 0,
-                L: parseFloat(document.getElementById('rs_btr').value) || 0,
-                M: parseFloat(document.getElementById('rs_kg').value) || 0
+        async function saveMonitoring() {
+            const data = {
+                sheet: "Monitoring",
+                A: document.getElementById('m_tgl').value,
+                B: parseFloat(document.getElementById('m_ayam').value) || 0,
+                C: 0,
+                D: parseFloat(document.getElementById('m_pakan_pagi').value) || 0,
+                E: parseFloat(document.getElementById('m_pakan_sore').value) || 0,
+                F: parseFloat(document.getElementById('m_up_btr').value) || 0,
+                G: parseFloat(document.getElementById('m_up_kg').value) || 0,
+                H: parseFloat(document.getElementById('m_us_btr').value) || 0,
+                I: parseFloat(document.getElementById('m_us_kg').value) || 0,
+                J: parseFloat(document.getElementById('m_rp_btr').value) || 0,
+                K: parseFloat(document.getElementById('m_rp_kg').value) || 0,
+                L: parseFloat(document.getElementById('m_rs_btr').value) || 0,
+                M: parseFloat(document.getElementById('m_rs_kg').value) || 0
             };
-
-            if (!rowData.A) return alert("Pilih Tanggal!");
-
-            // Update Dashboard Lokal
-            db.summary.ayam = rowData.B;
-            db.summary.u_btr += (rowData.F + rowData.H);
-            db.summary.u_kg += (rowData.G + rowData.I);
-            db.summary.r_btr += (rowData.J + rowData.L);
-            db.summary.r_kg += (rowData.K + rowData.M);
+            
+            db.sum.ayam = data.B;
+            db.sum.u = (data.F + data.H);
+            db.sum.r = (data.J + data.L);
+            db.logs.push({ time: new Date().toLocaleTimeString(), desc: "Produksi: " + (data.F + data.H) + " Btr Utuh & " + (data.J + data.L) + " Btr Retak", val: "-" });
             
             updateUI();
-
-            // Jalankan Sync
-            const success = await syncToCloud(rowData);
-            
-            // CLEARANCE (Anti Double Input)
+            await sync(data);
             document.querySelectorAll("#monitoring input").forEach(i => i.value = "");
-            document.getElementById('mon_tgl').value = new Date().toISOString().split('T')[0];
-            
-            alert("✅ Data Terkirim & Form Dibersihkan!");
+            alert("✅ Data Produksi Masuk!");
         }
 
-        document.getElementById('mon_tgl').value = new Date().toISOString().split('T')[0];
+        async function savePenjualan() {
+            const utuhNom = (parseFloat(document.getElementById('j_u_kg').value) || 0) * (parseFloat(document.getElementById('j_u_hrg').value) || 0);
+            const retakNom = (parseFloat(document.getElementById('j_r_kg').value) || 0) * (parseFloat(document.getElementById('j_r_hrg').value) || 0);
+            const total = utuhNom + retakNom;
+            
+            db.sum.in += total;
+            db.logs.push({ time: new Date().toLocaleTimeString(), desc: "Jual: " + document.getElementById('j_nama').value, val: "+ Rp " + total.toLocaleString() });
+            
+            updateUI();
+            await sync({ sheet: "Penjualan", nama: document.getElementById('j_nama').value, kas: document.getElementById('j_kas').value, nominal: total });
+            document.querySelectorAll("#jual input").forEach(i => i.value = "");
+            alert("✅ Penjualan Disimpan!");
+        }
+
+        async function saveBiaya() {
+    const nom = parseFloat(document.getElementById('b_nom').value) || 0;
+    const kat = document.getElementById('b_kat').value;
+    const sumber = document.getElementById('b_sumber_kas').value; // Mengambil data sumber kas
+    const ket = document.getElementById('b_ket').value;
+    
+    db.sum.out += nom;
+    db.logs.push({ 
+        time: new Date().toLocaleTimeString(), 
+        desc: `BIAYA (${sumber}): ${kat} - ${ket}`, 
+        val: "- Rp " + nom.toLocaleString() 
+    });
+    
+    updateUI();
+    // Kirim data lengkap ke Google Sheet
+    await sync({ 
+        sheet: "Biaya", 
+        kat: kat, 
+        sumber: sumber, 
+        ket: ket, 
+        nominal: nom 
+    });
+    
+    document.getElementById('b_nom').value = "";
+    document.getElementById('b_ket').value = "";
+    alert("✅ Biaya dari " + sumber + " berhasil dicatat!");
+}
+
+        document.getElementById('m_tgl').value = new Date().toISOString().split('T')[0];
     </script>
 </body>
 </html>
-
