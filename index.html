@@ -278,7 +278,7 @@
     </div>
 
     <script>
-        const CLOUD_URL = "https://script.google.com/macros/s/AKfycbz-BMbCkSTrt11EqvvBZldxexkKS86DTYSSFaN8hBm9T9nOlsgL1NytL47YUE9qjVDcgw/exec";
+        const CLOUD_URL = "https://script.google.com/macros/s/AKfycby10Dtu3YyQww-wAPspWqn5Fov03FC_YL1cGrvpKSGo_jL_1Vq56fhDyGS4ZWgEw_L0KQ/exec";
         
         let db = { 
             sum: { ayam: 0, u: 0, r: 0, in: 0, out: 0 },
@@ -324,12 +324,15 @@
         }
 
         function updateUI() {
-            document.getElementById('dash-ayam').innerText = db.sum.ayam;
-            document.getElementById('dash-u').innerText = db.sum.u + " Btr";
-            document.getElementById('dash-r').innerText = db.sum.r + " Btr";
-            document.getElementById('dash-kas').innerText = "Rp " + (db.sum.in - db.sum.out).toLocaleString();
-        }
-
+    document.getElementById('dash-ayam').innerText = db.sum.ayam;
+    document.getElementById('dash-u').innerText = db.sum.u + " Btr"; // Utuh
+    document.getElementById('dash-r').innerText = db.sum.r + " Btr"; // Retak
+    document.getElementById('dash-kas').innerText = "Rp " + (db.sum.in - db.sum.out).toLocaleString();
+    
+    // Hitung HDP Harian secara otomatis
+    let hdp = db.sum.ayam > 0 ? ((db.sum.u / db.sum.ayam) * 100).toFixed(1) : 0;
+    document.getElementById('r-hdp').innerText = hdp + "%";
+}
         function refreshReport() {
             document.getElementById('r-u').innerText = db.sum.u + " Btr";
             document.getElementById('r-r').innerText = db.sum.r + " Btr";
@@ -430,12 +433,32 @@
     document.getElementById('b_ket').value = "";
     alert("✅ Biaya dari " + sumber + " berhasil dicatat!");
 }
+async function loadData() {
+    try {
+        const resp = await fetch(CLOUD_URL);
+        const data = await resp.json();
+        db.sum.ayam = data.ayam;
+        db.sum.u = data.total_btr_utuh;
+        db.sum.r = data.total_btr_retak;
+        db.sum.in = data.total_in;
+        db.sum.out = data.total_out;
+        updateUI();
+    } catch (e) {
+        console.error("Gagal memuat data:", e);
+    }
+}
 
+// Panggil fungsi ini di dalam checkLogin()
+function checkLogin() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-content').style.display = 'flex';
+    initChart();
+    loadData(); // Tambahkan ini
+}
         document.getElementById('m_tgl').value = new Date().toISOString().split('T')[0];
     </script>
 </body>
 </html>
-
 
 
 
