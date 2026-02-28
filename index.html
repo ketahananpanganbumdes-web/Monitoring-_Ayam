@@ -2,464 +2,353 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BUMDes Enterprise - V22.5</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUMDes Ketapang - Enterprise System</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/all.min.css">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        #app-content { display: none; }
+
+        /* AREA CETAK */
         @media print {
-    /* Sembunyikan semua elemen kecuali area laporan */
-    body * { visibility: hidden; background: white !important; }
-    #laporan, #laporan * { visibility: visible; }
-    
-    /* Posisikan area laporan tepat di atas kiri */
-    #laporan { 
-        position: absolute; 
-        left: 0; 
-        top: 0; 
-        width: 100%; 
-        display: block !important; 
-        padding: 0 !important;
-        margin: 0 !important;
-    }
+            body * { visibility: hidden; background: white !important; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { 
+                position: absolute; left: 0; top: 0; width: 100%; 
+                box-shadow: none !important; border: none !important; 
+                margin: 0 !important; padding: 10mm !important;
+            }
+            .no-print { display: none !important; }
+            @page { size: auto; margin: 10mm; }
+        }
 
-    /* Hilangkan bayangan dan border rounded saat cetak agar bersih */
-    #print-area { 
-        box-shadow: none !important; 
-        border: none !important; 
-        width: 100% !important;
-        max-width: 100% !important;
-    }
-
-    /* Sembunyikan tombol print itu sendiri saat proses cetak */
-    .no-print { display: none !important; }
-    
-    /* Pengaturan ukuran kertas (A4 atau F4/Legal) */
-    @page {
-        size: auto;
-        margin: 15mm;
-    }
-}
+        input, select, textarea { border: 2px solid #e2e8f0 !important; }
+        input:focus, select:focus { border-color: #0f172a !important; outline: none; }
     </style>
 </head>
-<body class="bg-slate-100 font-sans text-slate-900">
+<body class="text-slate-900">
 
-    <div id="loading-overlay" class="fixed inset-0 bg-black/80 z-[9999] hidden flex-col items-center justify-center text-white">
-        <div class="animate-spin rounded-full h-12 w-12 border-4 border-yellow-500 border-t-transparent mb-4"></div>
-        <p class="font-black text-xs uppercase italic tracking-widest">Sinkronisasi Data BUMDes...</p>
-    </div>
-
-    <div id="login-screen" class="min-h-screen flex items-center justify-center bg-green-950 p-6">
-        <div class="bg-white p-10 rounded-[40px] shadow-2xl w-full max-w-sm border-t-[12px] border-yellow-500 text-center">
-            <img src="https://i.ibb.co.com/RG8wTX9W/Logo-Bumdes.png" class="h-20 mb-6 mx-auto">
-            <h2 class="font-black text-2xl text-green-900 uppercase leading-tight mb-2">Sistem Informasi BUMDes</h2>
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-8">Unit Ketahanan Pangan</p>
-            <button onclick="checkLogin()" class="w-full bg-green-700 hover:bg-green-800 text-white font-black py-5 rounded-2xl shadow-xl transition-all transform active:scale-95 uppercase">Buka Panel Kendali</button>
+    <div id="loading-overlay" class="fixed inset-0 bg-white/80 z-[9999] flex items-center justify-center hidden">
+        <div class="flex flex-col items-center text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-slate-900 mb-4"></div>
+            <span class="text-xs font-black uppercase tracking-widest">Memproses Data ke Cloud...</span>
         </div>
     </div>
 
-    <div id="app-content" class="flex flex-col md:flex-row min-h-screen">
-        <header class="md:hidden bg-green-900 text-white p-5 flex justify-between items-center sticky top-0 z-40 shadow-xl">
-            <div class="flex items-center gap-3">
-                <img src="https://i.ibb.co.com/RG8wTX9W/Logo-Bumdes.png" class="h-8 bg-white p-1 rounded-lg">
-                <span class="font-black text-xs uppercase italic">Cikahuripan Enterprise</span>
-            </div>
-            <button onclick="toggleSidebar()" class="text-2xl"><i class="fas fa-grid-2"></i><i class="fas fa-bars"></i></button>
-        </header>
+    <div id="login-screen" class="min-h-screen flex items-center justify-center p-6">
+        <div class="bg-white p-10 rounded-[40px] shadow-2xl w-full max-w-md text-center border-4 border-slate-900">
+            <img src="https://i.ibb.co.com/RG8wTX9W/Logo-Bumdes.png" class="h-20 mx-auto mb-6">
+            <h2 class="text-2xl font-black mb-2 italic uppercase">Unit Ketapang Ayam</h2>
+            <input type="password" id="pass-input" placeholder="PASSKEY" class="w-full p-4 mb-4 rounded-2xl text-center font-black">
+            <button onclick="checkLogin()" class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl hover:bg-slate-800">MASUK SYSTEM</button>
+        </div>
+    </div>
 
-        <aside id="sidebar" class="w-72 bg-green-950 text-white flex-shrink-0 flex flex-col shadow-2xl no-print">
-            <div class="p-10 text-center hidden md:block">
-                <img src="https://i.ibb.co.com/RG8wTX9W/Logo-Bumdes.png" class="h-16 mx-auto bg-white p-2 rounded-2xl mb-4">
-                <h1 class="text-xs font-black uppercase text-yellow-500 tracking-tighter">Manajemen BUMDes V22.5</h1>
+    <div id="app-content" class="min-h-screen flex flex-col md:flex-row hidden">
+        
+        <div class="w-full md:w-64 bg-slate-900 text-white p-6 no-print">
+            <div class="flex items-center gap-3 mb-10 px-2">
+                <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-900"><i class="fas fa-egg"></i></div>
+                <span class="font-black italic text-lg uppercase">Ketapang</span>
             </div>
-            <nav class="flex-1 px-4 space-y-2 text-[11px] font-black uppercase">
-                <button onclick="openTab(event, 'dashboard')" class="sidebar-link active w-full flex items-center p-4 rounded-2xl transition-all hover:bg-green-800"><i class="fas fa-home mr-4 text-lg text-yellow-500"></i> Dashboard</button>
-                <button onclick="openTab(event, 'monitoring')" class="sidebar-link w-full flex items-center p-4 rounded-2xl transition-all hover:bg-green-800"><i class="fas fa-file-signature mr-4 text-lg text-blue-400"></i> Input Produksi</button>
-                <button onclick="openTab(event, 'jual')" class="sidebar-link w-full flex items-center p-4 rounded-2xl transition-all hover:bg-green-800"><i class="fas fa-shopping-cart mr-4 text-lg text-green-400"></i> Penjualan</button>
-                <button onclick="openTab(event, 'biaya')" class="sidebar-link w-full flex items-center p-4 rounded-2xl transition-all hover:bg-green-800"><i class="fas fa-wallet mr-4 text-lg text-red-400"></i> Pengeluaran</button>
-                <button onclick="openTab(event, 'laporan')" class="sidebar-link w-full flex items-center p-4 rounded-2xl transition-all bg-yellow-600 bg-green-950 mt-4"><i class="fas fa-print mr-4 text-lg text-yellow-500"></i> Laporan Audit Desa</button>
-                <button onclick="logout()" class="w-full flex items-center p-4 bg-red-900/50 rounded-2xl mt-10 hover:bg-red-800 transition-all"><i class="fas fa-power-off mr-4 text-lg"></i> Keluar System</button>
+            <nav class="space-y-2">
+                <button onclick="showTab('dashboard')" class="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-800 font-bold text-sm"><i class="fas fa-home w-5"></i> Dashboard</button>
+                <button onclick="showTab('monitoring')" class="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-800 font-bold text-sm"><i class="fas fa-clipboard-list w-5"></i> Monitoring</button>
+                <button onclick="showTab('penjualan')" class="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-800 font-bold text-sm"><i class="fas fa-cart-plus w-5"></i> Penjualan</button>
+                <button onclick="showTab('biaya')" class="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-800 font-bold text-sm"><i class="fas fa-minus-circle w-5"></i> Pengeluaran</button>
+                <button onclick="showTab('laporan')" class="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-800 font-bold text-sm text-yellow-400"><i class="fas fa-file-invoice-dollar w-5"></i> Laporan L/R</button>
+                <button onclick="location.reload()" class="w-full flex items-center gap-4 p-4 rounded-2xl bg-red-500/10 text-red-500 font-bold text-sm mt-10"><i class="fas fa-power-off w-5"></i> Keluar</button>
             </nav>
-        </aside>
+        </div>
 
-        <main class="flex-1 p-4 md:p-10 overflow-y-auto">
+        <main class="flex-1 p-6 md:p-10 overflow-y-auto">
             
-            <div id="dashboard" class="tab-content active space-y-6">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-white p-6 rounded-[32px] shadow-sm border-b-4 border-green-600">
-                        <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Populasi Ayam</span>
-                        <p id="dash-ayam" class="text-2xl font-black">0</p>
+            <div id="dashboard" class="tab-content active">
+                <div class="flex justify-between items-end mb-8">
+                    <div>
+                        <h1 class="text-3xl font-black italic uppercase italic">Ringkasan Bisnis</h1>
+                        <p class="text-xs font-bold text-slate-400 uppercase italic">Unit Ayam Petelur Cikahuripan</p>
                     </div>
-                    <div class="bg-white p-6 rounded-[32px] shadow-sm border-b-4 border-blue-600">
-                        <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Produksi Utuh</span>
-                        <p id="dash-u" class="text-xl font-black text-blue-700">0 Btr</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-[32px] shadow-sm border-b-4 border-red-600">
-                        <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Produksi Retak</span>
-                        <p id="dash-r" class="text-xl font-black text-red-700">0 Btr</p>
-                    </div>
-                    <div class="bg-yellow-500 p-6 rounded-[32px] shadow-sm text-white">
-                        <span class="text-[8px] font-black uppercase tracking-widest block mb-1 opacity-80">Saldo Kas Unit</span>
-                        <p id="dash-kas" class="text-xl font-black">Rp 0</p>
-                    </div>
+                    <button onclick="loadData()" class="p-4 bg-white rounded-2xl shadow-sm hover:text-blue-600"><i class="fas fa-sync"></i></button>
                 </div>
-                <div class="bg-white p-8 rounded-[40px] shadow-sm">
-                    <h4 class="text-[10px] font-black uppercase text-slate-400 mb-6 italic tracking-widest">Tren Produktivitas (HDP %)</h4>
-                    <canvas id="prodChart" height="100"></canvas>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-8 rounded-[40px] shadow-sm">
+                        <h5 class="text-[10px] font-black uppercase text-slate-400 mb-2">Ayam Hidup</h5>
+                        <p id="dash-ayam" class="text-5xl font-black italic">0</p>
+                    </div>
+                    <div class="bg-slate-900 p-8 rounded-[40px] text-white">
+                        <h5 class="text-[10px] font-black uppercase text-slate-500 mb-2">Total Telur (Utuh)</h5>
+                        <p id="dash-u" class="text-5xl font-black italic text-yellow-400">0</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-[40px] shadow-sm">
+                        <h5 class="text-[10px] font-black uppercase text-slate-400 mb-2">Saldo Kas Unit</h5>
+                        <p id="dash-kas" class="text-4xl font-black italic text-blue-600">Rp 0</p>
+                    </div>
                 </div>
             </div>
 
             <div id="monitoring" class="tab-content">
-                <div class="bg-white p-8 rounded-[40px] shadow-sm max-w-2xl mx-auto border border-slate-100">
-                    <h3 class="font-black text-green-900 mb-8 uppercase italic text-sm border-l-4 border-green-700 pl-4">Form Monitoring Produksi (A-M)</h3>
-                    <div class="space-y-6">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div><label class="text-[10px] font-black uppercase text-slate-400 ml-2">Tanggal</label><input type="date" id="m_tgl" class="w-full p-4 bg-slate-100 font-bold border-none outline-none"></div>
-                            <div><label class="text-[10px] font-black uppercase text-slate-400 ml-2">Ayam Hidup</label><input type="number" id="m_ayam" class="w-full p-4 bg-slate-100 font-bold border-none outline-none"></div>
+                <div class="max-w-4xl mx-auto bg-white p-8 rounded-[40px] shadow-sm">
+                    <h2 class="text-xl font-black mb-6 uppercase border-b-4 border-slate-900 pb-2">Form Monitoring Harian</h2>
+                    <form id="formMon" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2"><label class="text-[10px] font-bold uppercase">Tanggal</label><input type="date" id="mon-A" class="w-full p-4 rounded-2xl bg-slate-50 font-bold" required></div>
+                        <div><label class="text-[10px] font-bold uppercase">Ayam Hidup (Ekor)</label><input type="number" id="mon-B" class="w-full p-4 rounded-2xl bg-slate-50 font-bold"></div>
+                        <div><label class="text-[10px] font-bold uppercase">Ayam Mati</label><input type="number" id="mon-C" class="w-full p-4 rounded-2xl bg-slate-50 font-bold"></div>
+                        <div class="p-4 bg-yellow-50 rounded-[30px] md:col-span-2 grid grid-cols-2 gap-4">
+                            <h3 class="col-span-2 text-[10px] font-black text-yellow-600 uppercase italic">Produksi Telur Utuh (Btr & Kg)</h3>
+                            <input type="number" id="mon-F" placeholder="Pagi (Btr)" class="p-4 rounded-2xl">
+                            <input type="number" id="mon-G" placeholder="Pagi (Kg)" class="p-4 rounded-2xl">
+                            <input type="number" id="mon-H" placeholder="Sore (Btr)" class="p-4 rounded-2xl">
+                            <input type="number" id="mon-I" placeholder="Sore (Kg)" class="p-4 rounded-2xl">
                         </div>
-                        
-                        <div class="bg-orange-50 p-6 rounded-3xl border border-orange-100">
-                            <span class="text-[10px] font-black text-orange-700 uppercase italic">Pakan (Kg)</span>
-                            <div class="grid grid-cols-2 gap-4 mt-3">
-                                <input type="number" id="m_pakan_pagi" placeholder="Pagi" class="p-4 rounded-xl text-sm font-bold bg-white">
-                                <input type="number" id="m_pakan_sore" placeholder="Sore" class="p-4 rounded-xl text-sm font-bold bg-white">
-                            </div>
+                        <div class="p-4 bg-red-50 rounded-[30px] md:col-span-2 grid grid-cols-2 gap-4">
+                            <h3 class="col-span-2 text-[10px] font-black text-red-600 uppercase italic">Produksi Telur Retak (Btr & Kg)</h3>
+                            <input type="number" id="mon-J" placeholder="Pagi (Btr)" class="p-4 rounded-2xl">
+                            <input type="number" id="mon-K" placeholder="Pagi (Kg)" class="p-4 rounded-2xl">
+                            <input type="number" id="mon-L" placeholder="Sore (Btr)" class="p-4 rounded-2xl">
+                            <input type="number" id="mon-M" placeholder="Sore (Kg)" class="p-4 rounded-2xl">
                         </div>
-
-                        <div class="bg-blue-50 p-6 rounded-3xl border border-blue-100 text-blue-700">
-                            <span class="text-[10px] font-black uppercase italic">Telur Utuh (Btr & Kg)</span>
-                            <div class="grid grid-cols-2 gap-4 mt-3">
-                                <input type="number" id="m_up_btr" placeholder="Pagi (Btr)" class="p-4 rounded-xl text-sm font-bold bg-white text-slate-900">
-                                <input type="number" id="m_up_kg" placeholder="Pagi (Kg)" class="p-4 rounded-xl text-sm font-bold bg-white text-slate-900">
-                                <input type="number" id="m_us_btr" placeholder="Sore (Btr)" class="p-4 rounded-xl text-sm font-bold bg-white text-slate-900">
-                                <input type="number" id="m_us_kg" placeholder="Sore (Kg)" class="p-4 rounded-xl text-sm font-bold bg-white text-slate-900">
-                            </div>
-                        </div>
-
-                        <div class="bg-red-50 p-6 rounded-3xl border border-red-100 text-red-700">
-                            <span class="text-[10px] font-black uppercase italic">Telur Retak (Btr & Kg)</span>
-                            <div class="grid grid-cols-2 gap-4 mt-3">
-                                <input type="number" id="m_rp_btr" placeholder="Pagi (Btr)" class="p-4 rounded-xl text-sm font-bold bg-white text-slate-900">
-                                <input type="number" id="m_rp_kg" placeholder="Pagi (Kg)" class="p-4 rounded-xl text-sm font-bold bg-white text-slate-900">
-                                <input type="number" id="m_rs_btr" placeholder="Sore (Btr)" class="p-4 rounded-xl text-sm font-bold bg-white text-slate-900">
-                                <input type="number" id="m_rs_kg" placeholder="Sore (Kg)" class="p-4 rounded-xl text-sm font-bold bg-white text-slate-900">
-                            </div>
-                        </div>
-
-                        <button onclick="saveMonitoring()" class="w-full bg-green-700 hover:bg-green-800 text-white font-black py-6 rounded-2xl shadow-xl uppercase transition-all active:scale-95">Simpan Data & Bersihkan</button>
-                    </div>
+                        <button type="submit" class="md:col-span-2 bg-slate-900 text-white font-black py-5 rounded-[30px] uppercase italic tracking-widest mt-4">Simpan Monitoring</button>
+                    </form>
                 </div>
             </div>
 
-            <div id="jual" class="tab-content">
-                <div class="bg-white p-8 rounded-[40px] shadow-sm max-w-xl mx-auto border-t-[12px] border-blue-700">
-                    <h3 class="font-black text-blue-900 mb-6 uppercase italic text-sm">Transaksi Penjualan</h3>
-                    <div class="space-y-4">
-                        <input type="text" id="j_nama" placeholder="Nama Pembeli" class="w-full p-5 bg-slate-50 font-bold border-none outline-none">
-                        
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="p-5 bg-blue-50 rounded-3xl">
-                                <label class="text-[9px] font-black text-blue-700 uppercase block mb-2">Telur Utuh</label>
-                                <input type="number" id="j_u_kg" placeholder="Kg" class="w-full p-3 rounded-xl mb-2 font-bold">
-                                <input type="number" id="j_u_hrg" placeholder="Harga/Kg" class="w-full p-3 rounded-xl font-bold">
-                            </div>
-                            <div class="p-5 bg-red-50 rounded-3xl">
-                                <label class="text-[9px] font-black text-red-700 uppercase block mb-2">Telur Retak</label>
-                                <input type="number" id="j_r_kg" placeholder="Kg" class="w-full p-3 rounded-xl mb-2 font-bold">
-                                <input type="number" id="j_r_hrg" placeholder="Harga/Kg" class="p-3 w-full rounded-xl font-bold">
-                            </div>
-                        </div>
-
-                        <select id="j_kas" class="w-full p-5 bg-slate-100 font-black text-xs uppercase">
-                            <option value="TUNAI">KAS TUNAI (UNIT)</option>
-                            <option value="MANDIRI">BANK MANDIRI</option>
-                            <option value="DANA">DANA</option>
-                        </select>
-                        <button onclick="savePenjualan()" class="w-full bg-blue-800 text-white font-black py-6 rounded-2xl uppercase shadow-lg active:scale-95 transition-all">Simpan Transaksi</button>
-                    </div>
+            <div id="penjualan" class="tab-content">
+    <div class="max-w-2xl mx-auto bg-white p-8 rounded-[40px] shadow-sm border-t-8 border-blue-600">
+        <h2 class="text-xl font-black mb-6 uppercase text-blue-600">Input Penjualan Telur</h2>
+        <form id="formJual" class="space-y-4">
+            <div>
+                <label class="text-[10px] font-bold uppercase">Nama Pembeli</label>
+                <input type="text" id="jual-nama" placeholder="Contoh: Toko Berkah" class="w-full p-4 rounded-2xl bg-slate-50 font-bold" required>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] font-bold uppercase">Jumlah (Kg)</label>
+                    <input type="number" step="0.01" id="jual-kg" placeholder="0.00" class="w-full p-4 rounded-2xl bg-slate-50 font-bold" oninput="hitungTotalJual()" required>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold uppercase">Harga per Kg (Rp)</label>
+                    <input type="number" id="jual-harga" placeholder="Contoh: 26000" class="w-full p-4 rounded-2xl bg-slate-50 font-bold" oninput="hitungTotalJual()" required>
                 </div>
             </div>
+
+            <div>
+                <label class="text-[10px] font-bold uppercase">Total Nominal (Otomatis)</label>
+                <input type="number" id="jual-nom" placeholder="Total Rp" class="w-full p-4 rounded-2xl bg-blue-50 font-black text-blue-700 border-2 border-blue-200" readonly>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-bold uppercase">Metode Kas</label>
+                <select id="jual-kas" class="w-full p-4 rounded-2xl bg-slate-50 font-bold italic">
+                    <option value="KAS TUNAI">KAS TUNAI</option>
+                    <option value="BANK/TRANSFER">BANK/TRANSFER</option>
+                </select>
+            </div>
+
+            <button type="submit" class="w-full bg-blue-600 text-white font-black py-5 rounded-[30px] uppercase italic tracking-widest mt-4">Simpan Penjualan</button>
+        </form>
+    </div>
+</div>
 
             <div id="biaya" class="tab-content">
-    <div class="bg-white p-8 rounded-[40px] shadow-sm max-w-xl mx-auto border-t-[12px] border-red-700">
-        <h3 class="font-black text-red-900 mb-6 uppercase italic text-sm">Input Biaya Operasional</h3>
-        <div class="space-y-4">
-            <select id="b_kat" class="w-full p-5 bg-slate-50 font-black text-xs uppercase">
-                <option value="PAKAN">PEMBELIAN PAKAN</option>
-                <option value="GAJI">GAJI PEGAWAI</option>
-                <option value="OBAT">OBAT & VITAMIN</option>
-                <option value="LISTRIK">LISTRIK & AIR</option>
-                <option value="LAINNYA">BIAYA LAIN-LAIN</option>
-            </select>
-            
-            <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Sumber Dana Keluar:</label>
-            <select id="b_sumber_kas" class="w-full p-5 bg-yellow-50 font-black text-xs uppercase border-2 border-yellow-200">
-                <option value="TUNAI">KAS TUNAI (UNIT)</option>
-                <option value="MANDIRI">BANK MANDIRI</option>
-                <option value="DANA">AKUN DANA BUMDES</option>
-            </select>
-
-            <input type="text" id="b_ket" placeholder="Keterangan Detail (Contoh: Beli Pakan 10 Sak)" class="w-full p-5 bg-slate-50 font-bold">
-            <input type="number" id="b_nom" placeholder="Nominal Rp" class="w-full p-5 bg-red-50 text-red-700 font-black text-xl">
-            
-            <button onclick="saveBiaya()" class="w-full bg-red-700 text-white font-black py-6 rounded-2xl uppercase active:scale-95 transition-all">Catat Pengeluaran</button>
-        </div>
-    </div>
-</div>
+                <div class="max-w-2xl mx-auto bg-white p-8 rounded-[40px] shadow-sm border-t-8 border-red-500">
+                    <h2 class="text-xl font-black mb-6 uppercase text-red-500">Input Pengeluaran / Biaya</h2>
+                    <form id="formBiaya" class="space-y-4">
+                        <select id="biaya-kat" class="w-full p-4 rounded-2xl bg-slate-50 font-bold italic">
+                            <option value="PAKAN">PAKAN</option>
+                            <option value="OBAT/VAKSIN">OBAT/VAKSIN</option>
+                            <option value="GAJI/HOK">GAJI/HOK</option>
+                            <option value="LISTRIK/AIR">LISTRIK/AIR</option>
+                            <option value="LAIN-LAIN">LAIN-LAIN</option>
+                        </select>
+                        <select id="biaya-sumber" class="w-full p-4 rounded-2xl bg-slate-50 font-bold italic">
+                            <option value="KAS TUNAI">AMBIL DARI KAS TUNAI</option>
+                            <option value="BANK/TRANSFER">AMBIL DARI BANK</option>
+                        </select>
+                        <textarea id="biaya-ket" placeholder="Keterangan Rinci..." class="w-full p-4 rounded-2xl bg-slate-50 font-bold" rows="3"></textarea>
+                        <input type="number" id="biaya-nom" placeholder="Nominal Keluar (Rp)" class="w-full p-4 rounded-2xl bg-slate-50 font-bold" required>
+                        <button type="submit" class="w-full bg-red-500 text-white font-black py-5 rounded-[30px] uppercase italic tracking-widest">Simpan Pengeluaran</button>
+                    </form>
+                </div>
+            </div>
 
             <div id="laporan" class="tab-content">
-    <div class="bg-white p-8 md:p-10 rounded-[40px] shadow-xl max-w-4xl mx-auto" id="print-area">
-        
-        <div class="text-center mb-8 border-b-4 border-double border-slate-900 pb-6">
-            <img src="https://i.ibb.co.com/RG8wTX9W/Logo-Bumdes.png" class="h-16 mx-auto mb-4">
-            <h1 class="text-xl md:text-2xl font-black uppercase">LAPORAN PERTANGGUNGJAWABAN HARIAN</h1>
-            <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Unit Usaha Peternakan Ayam Petelur BUMDes Cikahuripan</p>
-            <p id="rep-tgl" class="mt-4 text-sm font-black bg-slate-100 inline-block px-4 py-1 rounded-full"></p>
-        </div>
+                <div id="print-area" class="bg-white p-10 rounded-[40px] shadow-2xl max-w-4xl mx-auto">
+                    <div class="text-center mb-10 border-b-4 border-double border-slate-900 pb-6">
+                        <img src="https://i.ibb.co.com/RG8wTX9W/Logo-Bumdes.png" class="h-16 mx-auto mb-4">
+                        <h1 class="text-2xl font-black uppercase tracking-tighter">Laporan Laba Rugi Unit Ketapang</h1>
+                        <p id="rep-tgl" class="mt-2 text-xs font-black bg-slate-900 text-white px-4 py-1 rounded-full inline-block uppercase italic"></p>
+                    </div>
 
-        <div class="grid grid-cols-2 gap-4 md:gap-8 mb-8">
-            <div class="p-4 bg-slate-50 rounded-3xl border border-slate-200">
-                <h5 class="text-[9px] font-black uppercase text-slate-400 mb-3 italic">Kinerja Produksi</h5>
-                <div class="space-y-2 font-bold text-xs">
-                    <div class="flex justify-between border-b border-dashed pb-1"><span>Utuh</span> <span id="r-u">0 Btr</span></div>
-                    <div class="flex justify-between border-b border-dashed pb-1"><span>Retak</span> <span id="r-r">0 Btr</span></div>
-                    <div class="flex justify-between"><span>HDP</span> <span id="r-hdp" class="text-green-700">0%</span></div>
+                    <div class="grid grid-cols-2 gap-6 mb-8">
+                        <div class="p-6 bg-slate-50 rounded-[30px] border border-slate-200">
+                            <h5 class="text-[9px] font-black uppercase text-slate-400 mb-4 italic">Kinerja Produksi</h5>
+                            <div class="space-y-2 text-xs font-bold uppercase italic">
+                                <div class="flex justify-between border-b border-dashed pb-1"><span>Utuh</span> <span id="r-u">0</span> Btr</div>
+                                <div class="flex justify-between border-b border-dashed pb-1"><span>Retak</span> <span id="r-r">0</span> Btr</div>
+                                <div class="flex justify-between text-blue-700"><span>Ayam Hidup</span> <span id="r-ayam">0</span> Ekor</div>
+                            </div>
+                        </div>
+                        <div class="p-6 bg-slate-50 rounded-[30px] border border-slate-200 flex flex-col justify-center items-center">
+                            <h5 class="text-[9px] font-black uppercase text-slate-400 mb-2 italic">HDP Harian</h5>
+                            <p id="r-hdp" class="text-4xl font-black italic text-slate-900">0%</p>
+                        </div>
+                    </div>
+
+                    <div class="border-2 border-slate-900 rounded-[30px] overflow-hidden mb-10">
+                        <table class="w-full text-xs text-left">
+                            <thead class="bg-slate-900 text-white uppercase text-[10px] italic font-black">
+                                <tr><th class="p-4">Deskripsi Akuntansi</th><th class="p-4 text-right">Nilai (IDR)</th></tr>
+                            </thead>
+                            <tbody class="font-bold italic uppercase">
+                                <tr class="border-b">
+                                    <td class="p-4">Total Pendapatan (In)</td>
+                                    <td id="r-in" class="p-4 text-right text-blue-600">0</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="p-4">Total Beban Operasional (Out)</td>
+                                    <td id="r-out" class="p-4 text-right text-red-500">0</td>
+                                </tr>
+                                <tr class="bg-slate-50 border-b">
+                                    <td class="p-4 text-slate-400">Penyusutan Kandang (Flat)</td>
+                                    <td id="r-sk" class="p-4 text-right text-slate-400">0</td>
+                                </tr>
+                                <tr class="bg-slate-50 border-b text-slate-400">
+                                    <td class="p-4">Penyusutan Biologis (Ayam Hidup)</td>
+                                    <td id="r-sa" class="p-4 text-right">0</td>
+                                </tr>
+                                <tr class="bg-yellow-300 text-slate-900 text-sm">
+                                    <td class="p-4 font-black">Laba/Rugi Bersih (Net Profit)</td>
+                                    <td id="r-net" class="p-4 text-right font-black">Rp 0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-20 text-center text-[10px] font-black uppercase italic mt-10">
+                        <div><p class="mb-20">Ketua BUMDes Cikahuripan,</p><p class="border-t-2 border-slate-900 pt-2 mx-10">( ............................ )</p></div>
+                        <div><p class="mb-20">Kepala Unit Produksi,</p><p class="border-t-2 border-slate-900 pt-2 mx-10">( ............................ )</p></div>
+                    </div>
+
+                    <button onclick="window.print()" class="no-print w-full mt-10 bg-slate-900 text-white font-black py-5 rounded-2xl uppercase italic hover:scale-[1.01] transition-all">
+                        <i class="fas fa-print mr-2"></i> Cetak Laporan Sekarang
+                    </button>
                 </div>
             </div>
-            <div class="p-4 bg-slate-50 rounded-3xl border border-slate-200">
-                <h5 class="text-[9px] font-black uppercase text-slate-400 mb-3 italic">Keuangan (IDR)</h5>
-                <div class="space-y-2 font-bold text-xs">
-                    <div class="flex justify-between border-b border-dashed pb-1"><span>Masuk</span> <span id="r-in" class="text-blue-700">0</span></div>
-                    <div class="flex justify-between border-b border-dashed pb-1"><span>Keluar</span> <span id="r-out" class="text-red-700">0</span></div>
-                    <div class="flex justify-between px-1 bg-yellow-300 rounded"><span>Saldo</span> <span id="r-saldo">0</span></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="overflow-x-auto">
-            <table class="w-full text-[10px] border-collapse border border-slate-300">
-                <thead>
-                    <tr class="bg-slate-900 text-white uppercase font-black">
-                        <th class="p-3 border border-slate-300 w-24">Waktu</th>
-                        <th class="p-3 border border-slate-300 text-left">Uraian Aktivitas</th>
-                        <th class="p-3 border border-slate-300 text-right w-32">Nominal</th>
-                    </tr>
-                </thead>
-                <tbody id="log-body" class="font-bold uppercase italic">
-                    </tbody>
-            </table>
-        </div>
-
-        <div class="mt-16 grid grid-cols-2 gap-20 text-center text-[10px] font-black uppercase">
-            <div>
-                <p>Mengetahui,</p>
-                <p class="mb-20">Ketua BUMDes Cikahuripan</p>
-                <p class="border-t border-black w-48 mx-auto pt-1">( ............................ )</p>
-            </div>
-            <div>
-                <p>Dibuat Oleh,</p>
-                <p class="mb-20">Kepala Unit Produksi</p>
-                <p class="border-t border-black w-48 mx-auto pt-1">( ............................ )</p>
-            </div>
-        </div>
-        
-        <div class="mt-10 flex gap-4 no-print">
-            <button onclick="window.print()" class="flex-1 bg-slate-900 text-white font-black py-4 rounded-2xl uppercase hover:bg-slate-800 transition-all">
-                <i class="fas fa-print mr-2"></i> Cetak Laporan
-            </button>
-        </div>
-    </div>
-</div>
         </main>
     </div>
 
     <script>
-        const CLOUD_URL = "https://script.google.com/macros/s/AKfycby10Dtu3YyQww-wAPspWqn5Fov03FC_YL1cGrvpKSGo_jL_1Vq56fhDyGS4ZWgEw_L0KQ/exec";
-        
-        let db = { 
-            sum: { ayam: 0, u: 0, r: 0, in: 0, out: 0 },
-            logs: []
-        };
+        const CLOUD_URL = "https://script.google.com/macros/s/AKfycbx5AbwPfZhsVQXRbq3p2qNYOovwAfWKMdOFfbJ4PUeEZ1WOshEawF3OAAf_qXRuLvnXfA/exec";
+        let db = { sum: {} };
 
         function checkLogin() {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-content').style.display = 'flex';
-            initChart();
-            updateUI();
+            if(document.getElementById('pass-input').value === "1234") {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('app-content').classList.remove('hidden');
+                loadData();
+            } else { alert("Passkey Salah!"); }
         }
 
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
-
-        function openTab(evt, tabId) {
-            document.querySelectorAll(".tab-content").forEach(c => c.style.display = "none");
-            document.querySelectorAll(".sidebar-link").forEach(b => b.classList.remove("active", "bg-green-800", "bg-yellow-600"));
-            document.getElementById(tabId).style.display = "block";
-            evt.currentTarget.classList.add("active");
-            if(tabId === 'laporan') refreshReport();
-            if (window.innerWidth < 768) toggleSidebar();
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
         }
+         // Fungsi hitung otomatis Total Nominal
+    function hitungTotalJual() {
+        const kg = document.getElementById('jual-kg').value || 0;
+        const harga = document.getElementById('jual-harga').value || 0;
+        const total = kg * harga;
+        document.getElementById('jual-nom').value = total;
+    }
 
-        function logout() { window.location.reload(); }
+    // Update Handler Submit Penjualan
+    document.getElementById('formJual').onsubmit = (e) => {
+        e.preventDefault();
+        sendData({
+            sheet: "Penjualan",
+            nama: document.getElementById('jual-nama').value,
+            kg: document.getElementById('jual-kg').value,
+            harga: document.getElementById('jual-harga').value,
+            nominal: document.getElementById('jual-nom').value,
+            kas: document.getElementById('jual-kas').value
+        });
+        // Reset form setelah kirim
+        e.target.reset();
+    };
 
-        function initChart() {
-            const ctx = document.getElementById('prodChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
-                    datasets: [{
-                        label: 'HDP %',
-                        data: [72, 75, 74, 80, 82, 81, 85],
-                        borderColor: '#15803d',
-                        backgroundColor: 'rgba(21, 128, 61, 0.1)',
-                        fill: true, tension: 0.4
-                    }]
-                },
-                options: { responsive: true, plugins: { legend: { display: false } } }
-            });
+        async function loadData() {
+            document.getElementById('loading-overlay').classList.remove('hidden');
+            try {
+                const response = await fetch(CLOUD_URL);
+                db.sum = await response.json();
+                updateUI();
+            } finally { document.getElementById('loading-overlay').classList.add('hidden'); }
         }
 
         function updateUI() {
-    document.getElementById('dash-ayam').innerText = db.sum.ayam;
-    document.getElementById('dash-u').innerText = db.sum.u + " Btr"; // Utuh
-    document.getElementById('dash-r').innerText = db.sum.r + " Btr"; // Retak
-    document.getElementById('dash-kas').innerText = "Rp " + (db.sum.in - db.sum.out).toLocaleString();
-    
-    // Hitung HDP Harian secara otomatis
-    let hdp = db.sum.ayam > 0 ? ((db.sum.u / db.sum.ayam) * 100).toFixed(1) : 0;
-    document.getElementById('r-hdp').innerText = hdp + "%";
-}
-        function refreshReport() {
-            document.getElementById('r-u').innerText = db.sum.u + " Btr";
-            document.getElementById('r-r').innerText = db.sum.r + " Btr";
-            document.getElementById('r-in').innerText = "Rp " + db.sum.in.toLocaleString();
-            document.getElementById('r-out').innerText = "Rp " + db.sum.out.toLocaleString();
-            document.getElementById('r-saldo').innerText = "Rp " + (db.sum.in - db.sum.out).toLocaleString();
-            document.getElementById('r-hdp').innerText = db.sum.ayam > 0 ? ((db.sum.u / db.sum.ayam) * 100).toFixed(1) + "%" : "0%";
-            document.getElementById('rep-tgl').innerText = "TGL: " + new Date().toLocaleDateString('id-ID', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'});
-
-            const body = document.getElementById('log-body');
-            body.innerHTML = db.logs.map(l => `<tr class="border-b"><td class="p-4 border">${l.time}</td><td class="p-4 border">${l.desc}</td><td class="p-4 border text-right">${l.val}</td></tr>`).join('');
+            const s = db.sum;
+            document.getElementById('dash-ayam').innerText = s.ayam.toLocaleString();
+            document.getElementById('dash-u').innerText = s.total_btr_u.toLocaleString();
+            document.getElementById('dash-kas').innerText = "Rp " + (s.total_in - s.total_out).toLocaleString();
+            
+            document.getElementById('r-u').innerText = s.total_btr_u.toLocaleString();
+            document.getElementById('r-r').innerText = s.total_btr_r.toLocaleString();
+            document.getElementById('r-ayam').innerText = s.ayam.toLocaleString();
+            document.getElementById('r-hdp').innerText = s.ayam > 0 ? ((s.total_btr_u / s.ayam) * 100).toFixed(1) + "%" : "0%";
+            document.getElementById('r-in').innerText = "+ " + s.total_in.toLocaleString();
+            document.getElementById('r-out').innerText = "- " + s.total_out.toLocaleString();
+            document.getElementById('r-sk').innerText = "- " + Math.round(s.susut_kandang).toLocaleString();
+            document.getElementById('r-sa').innerText = "- " + Math.round(s.susut_ayam).toLocaleString();
+            document.getElementById('r-net').innerText = "Rp " + Math.round(s.laba_bersih).toLocaleString();
+            document.getElementById('rep-tgl').innerText = "DATA PER: " + new Date().toLocaleString('id-ID');
         }
 
-        async function sync(payload) {
-    document.getElementById('loading-overlay').style.display = 'flex';
-    try {
-        // Hapus 'mode: no-cors' agar bisa menerima respon sukses dari Google
-        const response = await fetch(CLOUD_URL, { 
-            method: 'POST', 
-            body: JSON.stringify(payload) 
-        });
-        return true;
-    } catch (e) { 
-        console.error("Sync Error: ", e);
-        return false; 
-    } finally { 
-        document.getElementById('loading-overlay').style.display = 'none'; 
-    }
-}
+        async function sendData(payload) {
+            document.getElementById('loading-overlay').classList.remove('hidden');
+            await fetch(CLOUD_URL, { method: 'POST', body: JSON.stringify(payload) });
+            loadData();
+            alert("Data Berhasil Tersimpan!");
+        }
 
-        async function saveMonitoring() {
-            const data = {
+        document.getElementById('formMon').onsubmit = (e) => {
+            e.preventDefault();
+            sendData({
                 sheet: "Monitoring",
-                A: document.getElementById('m_tgl').value,
-                B: parseFloat(document.getElementById('m_ayam').value) || 0,
-                C: 0,
-                D: parseFloat(document.getElementById('m_pakan_pagi').value) || 0,
-                E: parseFloat(document.getElementById('m_pakan_sore').value) || 0,
-                F: parseFloat(document.getElementById('m_up_btr').value) || 0,
-                G: parseFloat(document.getElementById('m_up_kg').value) || 0,
-                H: parseFloat(document.getElementById('m_us_btr').value) || 0,
-                I: parseFloat(document.getElementById('m_us_kg').value) || 0,
-                J: parseFloat(document.getElementById('m_rp_btr').value) || 0,
-                K: parseFloat(document.getElementById('m_rp_kg').value) || 0,
-                L: parseFloat(document.getElementById('m_rs_btr').value) || 0,
-                M: parseFloat(document.getElementById('m_rs_kg').value) || 0
-            };
-            
-            db.sum.ayam = data.B;
-            db.sum.u = (data.F + data.H);
-            db.sum.r = (data.J + data.L);
-            db.logs.push({ time: new Date().toLocaleTimeString(), desc: "Produksi: " + (data.F + data.H) + " Btr Utuh & " + (data.J + data.L) + " Btr Retak", val: "-" });
-            
-            updateUI();
-            await sync(data);
-            document.querySelectorAll("#monitoring input").forEach(i => i.value = "");
-            alert("✅ Data Produksi Masuk!");
-        }
+                A: document.getElementById('mon-A').value,
+                B: document.getElementById('mon-B').value, C: document.getElementById('mon-C').value,
+                F: document.getElementById('mon-F').value, G: document.getElementById('mon-G').value,
+                H: document.getElementById('mon-H').value, I: document.getElementById('mon-I').value,
+                J: document.getElementById('mon-J').value, K: document.getElementById('mon-K').value,
+                L: document.getElementById('mon-L').value, M: document.getElementById('mon-M').value
+            });
+        };
 
-        async function savePenjualan() {
-            const utuhNom = (parseFloat(document.getElementById('j_u_kg').value) || 0) * (parseFloat(document.getElementById('j_u_hrg').value) || 0);
-            const retakNom = (parseFloat(document.getElementById('j_r_kg').value) || 0) * (parseFloat(document.getElementById('j_r_hrg').value) || 0);
-            const total = utuhNom + retakNom;
-            
-            db.sum.in += total;
-            db.logs.push({ time: new Date().toLocaleTimeString(), desc: "Jual: " + document.getElementById('j_nama').value, val: "+ Rp " + total.toLocaleString() });
-            
-            updateUI();
-            await sync({ sheet: "Penjualan", nama: document.getElementById('j_nama').value, kas: document.getElementById('j_kas').value, nominal: total });
-            document.querySelectorAll("#jual input").forEach(i => i.value = "");
-            alert("✅ Penjualan Disimpan!");
-        }
+        document.getElementById('formJual').onsubmit = (e) => {
+            e.preventDefault();
+            sendData({
+                sheet: "Penjualan",
+                nama: document.getElementById('jual-nama').value,
+                kas: document.getElementById('jual-kas').value,
+                nominal: document.getElementById('jual-nom').value
+            });
+        };
 
-        async function saveBiaya() {
-    const nom = parseFloat(document.getElementById('b_nom').value) || 0;
-    const kat = document.getElementById('b_kat').value;
-    const sumber = document.getElementById('b_sumber_kas').value; // Mengambil data sumber kas
-    const ket = document.getElementById('b_ket').value;
-    
-    db.sum.out += nom;
-    db.logs.push({ 
-        time: new Date().toLocaleTimeString(), 
-        desc: `BIAYA (${sumber}): ${kat} - ${ket}`, 
-        val: "- Rp " + nom.toLocaleString() 
-    });
-    
-    updateUI();
-    // Kirim data lengkap ke Google Sheet
-    await sync({ 
-        sheet: "Biaya", 
-        kat: kat, 
-        sumber: sumber, 
-        ket: ket, 
-        nominal: nom 
-    });
-    
-    document.getElementById('b_nom').value = "";
-    document.getElementById('b_ket').value = "";
-    alert("✅ Biaya dari " + sumber + " berhasil dicatat!");
-}
-async function loadData() {
-    try {
-        const resp = await fetch(CLOUD_URL);
-        const data = await resp.json();
-        db.sum.ayam = data.ayam;
-        db.sum.u = data.total_btr_utuh;
-        db.sum.r = data.total_btr_retak;
-        db.sum.in = data.total_in;
-        db.sum.out = data.total_out;
-        updateUI();
-    } catch (e) {
-        console.error("Gagal memuat data:", e);
-    }
-}
-
-// Panggil fungsi ini di dalam checkLogin()
-function checkLogin() {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app-content').style.display = 'flex';
-    initChart();
-    loadData(); // Tambahkan ini
-}
-        document.getElementById('m_tgl').value = new Date().toISOString().split('T')[0];
+        document.getElementById('formBiaya').onsubmit = (e) => {
+            e.preventDefault();
+            sendData({
+                sheet: "Biaya",
+                kat: document.getElementById('biaya-kat').value,
+                sumber: document.getElementById('biaya-sumber').value,
+                ket: document.getElementById('biaya-ket').value,
+                nominal: document.getElementById('biaya-nom').value
+            });
+        };
     </script>
 </body>
 </html>
-
-
-
-
