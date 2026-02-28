@@ -11,17 +11,39 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         #app-content { display: none; }
-        @media (max-width: 768px) {
-            #sidebar { position: fixed; left: -100%; z-index: 50; height: 100%; transition: 0.3s; }
-            #sidebar.active { left: 0; }
-        }
-        input, select { border-radius: 12px !important; }
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
         @media print {
-            .no-print { display: none !important; }
-            #laporan { display: block !important; }
-            body { background: white; }
-        }
+    /* Sembunyikan semua elemen kecuali area laporan */
+    body * { visibility: hidden; background: white !important; }
+    #laporan, #laporan * { visibility: visible; }
+    
+    /* Posisikan area laporan tepat di atas kiri */
+    #laporan { 
+        position: absolute; 
+        left: 0; 
+        top: 0; 
+        width: 100%; 
+        display: block !important; 
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Hilangkan bayangan dan border rounded saat cetak agar bersih */
+    #print-area { 
+        box-shadow: none !important; 
+        border: none !important; 
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Sembunyikan tombol print itu sendiri saat proses cetak */
+    .no-print { display: none !important; }
+    
+    /* Pengaturan ukuran kertas (A4 atau F4/Legal) */
+    @page {
+        size: auto;
+        margin: 15mm;
+    }
+}
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-900">
@@ -190,53 +212,68 @@
 </div>
 
             <div id="laporan" class="tab-content">
-                <div class="bg-white p-10 rounded-[40px] shadow-xl" id="print-area">
-                    <div class="text-center mb-10 border-b-4 border-double border-slate-900 pb-6">
-                        <img src="https://i.ibb.co.com/RG8wTX9W/Logo-Bumdes.png" class="h-16 mx-auto mb-4">
-                        <h1 class="text-2xl font-black uppercase">LAPORAN PERTANGGUNGJAWABAN HARIAN</h1>
-                        <p class="text-xs font-bold uppercase tracking-widest italic">Unit Usaha Peternakan Ayam Petelur BUMDes Cikahuripan</p>
-                        <p id="rep-tgl" class="mt-4 text-sm font-black"></p>
-                    </div>
+    <div class="bg-white p-8 md:p-10 rounded-[40px] shadow-xl max-w-4xl mx-auto" id="print-area">
+        
+        <div class="text-center mb-8 border-b-4 border-double border-slate-900 pb-6">
+            <img src="https://i.ibb.co.com/RG8wTX9W/Logo-Bumdes.png" class="h-16 mx-auto mb-4">
+            <h1 class="text-xl md:text-2xl font-black uppercase">LAPORAN PERTANGGUNGJAWABAN HARIAN</h1>
+            <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Unit Usaha Peternakan Ayam Petelur BUMDes Cikahuripan</p>
+            <p id="rep-tgl" class="mt-4 text-sm font-black bg-slate-100 inline-block px-4 py-1 rounded-full"></p>
+        </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-                        <div class="p-6 bg-slate-50 rounded-3xl border-2 border-slate-100">
-                            <h5 class="text-[10px] font-black uppercase text-slate-400 mb-4 italic">Kinerja Produksi</h5>
-                            <div class="space-y-2 font-bold text-sm">
-                                <div class="flex justify-between border-b pb-1"><span>Produksi Utuh</span> <span id="r-u">0 Btr</span></div>
-                                <div class="flex justify-between border-b pb-1"><span>Produksi Retak</span> <span id="r-r">0 Btr</span></div>
-                                <div class="flex justify-between border-b pb-1"><span>HDP Harian</span> <span id="r-hdp" class="text-green-700">0%</span></div>
-                            </div>
-                        </div>
-                        <div class="p-6 bg-slate-50 rounded-3xl border-2 border-slate-100">
-                            <h5 class="text-[10px] font-black uppercase text-slate-400 mb-4 italic">Ringkasan Kas (Rupiah)</h5>
-                            <div class="space-y-2 font-bold text-sm text-right">
-                                <div class="flex justify-between border-b pb-1"><span>Pemasukan</span> <span id="r-in" class="text-blue-700">Rp 0</span></div>
-                                <div class="flex justify-between border-b pb-1"><span>Pengeluaran</span> <span id="r-out" class="text-red-700">Rp 0</span></div>
-                                <div class="flex justify-between border-b pb-1"><span>Saldo Akhir</span> <span id="r-saldo" class="bg-yellow-400 px-2 rounded">Rp 0</span></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <table class="w-full text-xs border-collapse">
-                        <thead>
-                            <tr class="bg-slate-900 text-white uppercase font-black italic">
-                                <th class="p-4 border">Waktu</th>
-                                <th class="p-4 border">Uraian Aktivitas</th>
-                                <th class="p-4 border text-right">Nominal</th>
-                            </tr>
-                        </thead>
-                        <tbody id="log-body" class="font-bold uppercase text-[10px]"></tbody>
-                    </table>
-
-                    <div class="mt-20 flex justify-between px-10 text-center text-xs font-black uppercase italic">
-                        <div>Mengetahui,<br>Ketua BUMDes<br><br><br><br>( ............................ )</div>
-                        <div>Dibuat Oleh,<br>Kepala Unit Produksi<br><br><br><br>( ............................ )</div>
-                    </div>
-                    
-                    <button onclick="window.print()" class="no-print w-full mt-10 bg-slate-900 text-white font-black py-6 rounded-2xl uppercase italic">Print Laporan Untuk Arsip Desa</button>
+        <div class="grid grid-cols-2 gap-4 md:gap-8 mb-8">
+            <div class="p-4 bg-slate-50 rounded-3xl border border-slate-200">
+                <h5 class="text-[9px] font-black uppercase text-slate-400 mb-3 italic">Kinerja Produksi</h5>
+                <div class="space-y-2 font-bold text-xs">
+                    <div class="flex justify-between border-b border-dashed pb-1"><span>Utuh</span> <span id="r-u">0 Btr</span></div>
+                    <div class="flex justify-between border-b border-dashed pb-1"><span>Retak</span> <span id="r-r">0 Btr</span></div>
+                    <div class="flex justify-between"><span>HDP</span> <span id="r-hdp" class="text-green-700">0%</span></div>
                 </div>
             </div>
+            <div class="p-4 bg-slate-50 rounded-3xl border border-slate-200">
+                <h5 class="text-[9px] font-black uppercase text-slate-400 mb-3 italic">Keuangan (IDR)</h5>
+                <div class="space-y-2 font-bold text-xs">
+                    <div class="flex justify-between border-b border-dashed pb-1"><span>Masuk</span> <span id="r-in" class="text-blue-700">0</span></div>
+                    <div class="flex justify-between border-b border-dashed pb-1"><span>Keluar</span> <span id="r-out" class="text-red-700">0</span></div>
+                    <div class="flex justify-between px-1 bg-yellow-300 rounded"><span>Saldo</span> <span id="r-saldo">0</span></div>
+                </div>
+            </div>
+        </div>
 
+        <div class="overflow-x-auto">
+            <table class="w-full text-[10px] border-collapse border border-slate-300">
+                <thead>
+                    <tr class="bg-slate-900 text-white uppercase font-black">
+                        <th class="p-3 border border-slate-300 w-24">Waktu</th>
+                        <th class="p-3 border border-slate-300 text-left">Uraian Aktivitas</th>
+                        <th class="p-3 border border-slate-300 text-right w-32">Nominal</th>
+                    </tr>
+                </thead>
+                <tbody id="log-body" class="font-bold uppercase italic">
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="mt-16 grid grid-cols-2 gap-20 text-center text-[10px] font-black uppercase">
+            <div>
+                <p>Mengetahui,</p>
+                <p class="mb-20">Ketua BUMDes Cikahuripan</p>
+                <p class="border-t border-black w-48 mx-auto pt-1">( ............................ )</p>
+            </div>
+            <div>
+                <p>Dibuat Oleh,</p>
+                <p class="mb-20">Kepala Unit Produksi</p>
+                <p class="border-t border-black w-48 mx-auto pt-1">( ............................ )</p>
+            </div>
+        </div>
+        
+        <div class="mt-10 flex gap-4 no-print">
+            <button onclick="window.print()" class="flex-1 bg-slate-900 text-white font-black py-4 rounded-2xl uppercase hover:bg-slate-800 transition-all">
+                <i class="fas fa-print mr-2"></i> Cetak Laporan
+            </button>
+        </div>
+    </div>
+</div>
         </main>
     </div>
 
@@ -398,6 +435,7 @@
     </script>
 </body>
 </html>
+
 
 
 
